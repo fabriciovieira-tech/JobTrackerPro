@@ -1,6 +1,6 @@
 # 💼 JobTracker Pro — Gestor de candidaturas e métricas de mercado
 
-O **JobTracker Pro** é uma aplicação web intuitiva e centralizada, desenvolvida para simplificar a organização da sua busca por emprego. Com ele, você registra suas candidaturas, acompanha o andamento de cada processo seletivo em tempo real e recebe alertas automáticos sobre vagas que precisam de acompanhamento.
+O **JobTracker Pro** é uma aplicação web intuitiva e centralizada, desenvolvida para simplificar a organização da sua busca por emprego. Com ele, é feito o registro de candidaturas, acompanha o andamento de cada processo seletivo em tempo real e recebe alertas automáticos sobre vagas que precisam de acompanhamento.
 
 A nova versão traz armazenamento seguro na nuvem e um painel de métricas interativo, transformando seu histórico de candidaturas em **dados estratégicos** para compreender padrões do mercado de trabalho.
 
