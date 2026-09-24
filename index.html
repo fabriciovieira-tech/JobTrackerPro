@@ -1,20 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobTracker Pro - Dashboard</title>
+    <title>Rastreador de candidaturas</title>
     
+    <!-- Importando Tailwind CSS, FontAwesome e Chart.js -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; 
+        }
+        
+        .fade-in { 
+            animation: fadeIn 0.3s ease-in-out; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(-10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Estilização da barra de rolagem para tabelas */
         .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -23,12 +37,12 @@
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Barra de Notificação para Vagas Estagnadas -->
+    <!-- Barra de notificação -->
     <div id="barra-notificacao" class="hidden bg-amber-500 text-white px-4 py-3 shadow-md flex justify-between items-center z-40 sticky top-0 transition-all duration-300">
         <div class="flex items-center">
             <i class="fas fa-exclamation-triangle mr-3 text-lg"></i>
             <div>
-                <h3 class="font-bold text-sm">Atenção: Vagas sem atualização há mais de 7 dias</h3>
+                <h3 class="font-bold text-sm">Atenção: existem vagas sem atualização há mais de 7 dias</h3>
                 <p class="text-xs opacity-90" id="texto-notificacao">Você tem candidaturas que precisam de acompanhamento.</p>
             </div>
         </div>
@@ -41,11 +55,11 @@
     <header class="bg-indigo-600 text-white shadow-lg p-5">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-bold flex items-center gap-2">
-                <i class="fas fa-briefcase"></i> JobTracker Pro <span class="text-xs bg-indigo-500 px-2 py-1 rounded ml-2">Cloud</span>
+                <i class="fas fa-briefcase"></i> JobTracker Pro
             </h1>
             <div class="flex items-center gap-4">
-                <span id="status-conexao" class="text-sm flex items-center gap-1 opacity-80">
-                    <i class="fas fa-circle-notch fa-spin text-xs"></i> Conectando...
+                <span class="text-sm flex items-center gap-1 opacity-80" title="Seus dados estão sendo salvos localmente neste navegador">
+                    <i class="fas fa-hdd text-xs"></i> Dados locais
                 </span>
             </div>
         </div>
@@ -55,66 +69,58 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Formulário de Cadastro -->
+            <!-- Formulário de cadastro -->
             <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
-                    <i class="fas fa-plus-circle text-indigo-500"></i> Nova Candidatura
+                    <i class="fas fa-plus-circle text-indigo-500"></i> Nova candidatura
                 </h2>
                 <form id="formulario-vaga" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cargo / Vaga</label>
-                        <input type="text" id="cargo" required placeholder="Ex: Engenheiro de Software" 
+                        <input type="text" id="cargo" required placeholder="Ex: Desenvolvedor front-end" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                        <input type="text" id="empresa" required placeholder="Ex: Tech Corp" 
+                        <input type="text" id="empresa" required placeholder="Ex: Tech solutions" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data da Candidatura</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data da candidatura</label>
                         <input type="date" id="data-candidatura" required 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status Inicial</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status inicial</label>
                         <select id="status" required 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="Aguardando Chamada">Aguardando Chamada</option>
-                            <option value="Em Entrevista">Em Entrevista</option>
+                            <option value="Aguardando chamada">Aguardando chamada</option>
+                            <option value="Em entrevista">Em entrevista</option>
                             <option value="Aprovado">Aprovado</option>
                             <option value="Rejeitado">Rejeitado</option>
                         </select>
                     </div>
-                    <button type="submit" id="btn-salvar" disabled
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> Registrar Vaga
+                    <button type="submit" id="btn-salvar"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Registrar vaga
                     </button>
                 </form>
             </div>
 
-            <!-- Tabela de Candidaturas -->
+            <!-- Tabela de candidaturas -->
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
-                    <i class="fas fa-list text-indigo-500"></i> Minhas Candidaturas
+                    <i class="fas fa-list text-indigo-500"></i> Minhas candidaturas
                 </h2>
                 
                 <div class="table-container overflow-x-auto flex-grow relative min-h-[300px]">
-                    <!-- Overlay de Carregamento -->
-                    <div id="loading-tabela" class="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-                        <div class="text-indigo-600 flex flex-col items-center">
-                            <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                            <span class="text-sm font-medium">Carregando dados...</span>
-                        </div>
-                    </div>
-
                     <table class="w-full min-w-[700px] text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm border-b">
                                 <th class="p-3 font-semibold rounded-tl-lg">Cargo</th>
                                 <th class="p-3 font-semibold">Empresa</th>
-                                <th class="p-3 font-semibold">Data Cadastro</th>
-                                <th class="p-3 font-semibold">Atualização</th>
+                                <th class="p-3 font-semibold">Cadastro</th>
+                                <th class="p-3 font-semibold">Última atualização</th>
                                 <th class="p-3 font-semibold">Status</th>
                                 <th class="p-3 font-semibold text-center rounded-tr-lg">Ações</th>
                             </tr>
@@ -132,19 +138,19 @@
             </div>
         </div>
 
-        <!-- Dashboard de Métricas -->
+        <!-- Dashboard de métricas -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4 gap-4">
                 <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-indigo-500"></i> Dashboard de Métricas
+                    <i class="fas fa-chart-pie text-indigo-500"></i> Dashboard de métricas
                 </h2>
                 
-                <!-- Controles do Gráfico -->
+                <!-- Controles do gráfico -->
                 <div class="flex bg-gray-100 p-1 rounded-lg">
-                    <button onclick="window.alterarTipoGrafico('bar')" id="btn-grafico-bar" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all">
+                    <button onclick="alterarTipoGrafico('bar')" id="btn-grafico-bar" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all">
                         <i class="fas fa-chart-bar mr-1"></i> Barras
                     </button>
-                    <button onclick="window.alterarTipoGrafico('pie')" id="btn-grafico-pie" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
+                    <button onclick="alterarTipoGrafico('pie')" id="btn-grafico-pie" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
                         <i class="fas fa-chart-pie mr-1"></i> Pizza
                     </button>
                 </div>
@@ -152,22 +158,22 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 h-[300px]">
                 <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por Cargo</h3>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por cargo</h3>
                     <div class="relative w-full h-full flex justify-center"><canvas id="chartCargos"></canvas></div>
                 </div>
                 <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por Empresa</h3>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por empresa</h3>
                     <div class="relative w-full h-full flex justify-center"><canvas id="chartEmpresas"></canvas></div>
                 </div>
                 <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Status Geral</h3>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Status geral</h3>
                     <div class="relative w-full h-full flex justify-center"><canvas id="chartStatus"></canvas></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Confirmação de Exclusão customizado (evitando uso de window.confirm) -->
+    <!-- Modal de exclusão -->
     <div id="modal-exclusao" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
         <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 fade-in">
             <div class="flex flex-col items-center text-center">
@@ -175,7 +181,7 @@
                     <i class="fas fa-trash-alt text-xl"></i>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Excluir candidatura?</h3>
-                <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. A vaga será removida do seu histórico e das métricas.</p>
+                <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. A vaga será removida do seu histórico permanentemente.</p>
                 
                 <div class="flex gap-3 w-full">
                     <button onclick="fecharModalExclusao()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
@@ -189,84 +195,46 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        /* Variáveis Globais de Estado */
+    <script>
+        /* Variáveis globais de estado */
         let candidaturas = [];
-        let userId = null;
-        let db = null;
-        let tipoGraficoAtual = 'bar'; /* Padrão inicia com gráfico de barras */
+        let tipoGraficoAtual = 'bar'; 
         let idVagaParaExcluir = null;
         
-        /* Instâncias dos Gráficos (Chart.js) */
+        /* Instâncias dos gráficos */
         let instChartCargos = null;
         let instChartEmpresas = null;
         let instChartStatus = null;
 
-        /* Configuração do Firebase fornecida pelo ambiente */
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        const iniciarAplicacao = async () => {
+        /* Inicialização ao carregar a página */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define a data de hoje como padrão no formulário
             document.getElementById('data-candidatura').valueAsDate = new Date();
+            
+            // Carrega os dados do localStorage
+            carregarDados();
+        });
 
-            try {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                db = getFirestore(app);
-
-                /* Autenticação antes de acessar o Firestore (Regra Crítica) */
-                if (authToken) {
-                    await signInWithCustomToken(auth, authToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                userId = auth.currentUser.uid;
-                
-                document.getElementById('status-conexao').innerHTML = '<i class="fas fa-check-circle text-green-400"></i> Conectado';
-                document.getElementById('btn-salvar').disabled = false;
-                
-                escutarDados();
-            } catch (error) {
-                console.error("Erro ao inicializar Firebase:", error);
-                document.getElementById('status-conexao').innerHTML = '<i class="fas fa-exclamation-triangle text-amber-400"></i> Erro de conexão';
+        /* Manipulação do localStorage */
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem('jobTrackerData');
+            if (dadosSalvos) {
+                candidaturas = JSON.parse(dadosSalvos);
             }
-        };
+            atualizarInterface();
+        }
 
-        /* Busca em tempo real da coleção privada do usuário */
-        const escutarDados = () => {
-            if (!userId) return;
-            
-            const caminhoColecao = collection(db, 'artifacts', appId, 'users', userId, 'candidaturas');
-            
-            onSnapshot(caminhoColecao, (snapshot) => {
-                candidaturas = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                
-                document.getElementById('loading-tabela').classList.add('hidden');
-                atualizarInterface();
-            }, (error) => {
-                console.error("Erro ao buscar dados:", error);
-            });
-        };
+        function salvarDados() {
+            localStorage.setItem('jobTrackerData', JSON.stringify(candidaturas));
+            atualizarInterface();
+        }
 
-        /* Tratamento de Envio do Formulário (Create) */
-        document.getElementById('formulario-vaga').addEventListener('submit', async (e) => {
+        /* Evento de cadastro de nova vaga */
+        document.getElementById('formulario-vaga').addEventListener('submit', (e) => {
             e.preventDefault();
-            if (!userId || !db) return;
-
-            const btn = document.getElementById('btn-salvar');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
             const novaCandidatura = {
+                id: Date.now().toString(), // Gera um ID único simples
                 cargo: document.getElementById('cargo').value.trim(),
                 empresa: document.getElementById('empresa').value.trim(),
                 dataCandidatura: document.getElementById('data-candidatura').value,
@@ -274,131 +242,120 @@
                 status: document.getElementById('status').value
             };
 
-            try {
-                const caminhoColecao = collection(db, 'artifacts', appId, 'users', userId, 'candidaturas');
-                await addDoc(caminhoColecao, novaCandidatura);
-                e.target.reset();
-                document.getElementById('data-candidatura').valueAsDate = new Date();
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Registrar Vaga';
-            }
+            candidaturas.push(novaCandidatura);
+            salvarDados();
+            
+            // Limpa o formulário e redefine a data
+            e.target.reset();
+            document.getElementById('data-candidatura').valueAsDate = new Date();
         });
 
-        /* Expondo funções para uso inline no HTML (Atualizar Status e Deletar) */
-        window.mudarStatus = async (id, novoStatus) => {
-            if (!userId || !db || !novoStatus) return;
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'candidaturas', id);
-                await updateDoc(docRef, {
-                    status: novoStatus,
-                    ultimaAtualizacao: new Date().toISOString().split('T')[0]
-                });
-            } catch (error) {
-                console.error("Erro ao atualizar status:", error);
+        /* Ações nas vagas */
+        function mudarStatus(id, novoStatus) {
+            const index = candidaturas.findIndex(v => v.id === id);
+            if (index !== -1) {
+                candidaturas[index].status = novoStatus;
+                candidaturas[index].ultimaAtualizacao = new Date().toISOString().split('T')[0];
+                salvarDados();
             }
-        };
+        }
 
-        window.abrirModalExclusao = (id) => {
+        function abrirModalExclusao(id) {
             idVagaParaExcluir = id;
             document.getElementById('modal-exclusao').classList.remove('hidden');
-        };
+        }
 
-        window.fecharModalExclusao = () => {
+        function fecharModalExclusao() {
             idVagaParaExcluir = null;
             document.getElementById('modal-exclusao').classList.add('hidden');
-        };
+        }
 
-        document.getElementById('btn-confirmar-exclusao').addEventListener('click', async () => {
-            if (!userId || !db || !idVagaParaExcluir) return;
-            
-            const btn = document.getElementById('btn-confirmar-exclusao');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'candidaturas', idVagaParaExcluir);
-                await deleteDoc(docRef); // A exclusão isolada que atualiza automaticamente as métricas via onSnapshot
-                window.fecharModalExclusao();
-            } catch (error) {
-                console.error("Erro ao excluir:", error);
-            } finally {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
+        document.getElementById('btn-confirmar-exclusao').addEventListener('click', () => {
+            if (idVagaParaExcluir) {
+                candidaturas = candidaturas.filter(v => v.id !== idVagaParaExcluir);
+                salvarDados();
+                fecharModalExclusao();
             }
         });
 
-        
-        /* Utilitários de Interface */
-        const formatarData = (dataStr) => {
+        /* Funções utilitárias */
+        function formatarData(dataStr) {
             if(!dataStr) return '-';
-            const [a, m, d] = dataStr.split('-');
-            return `${d}/${m}/${a}`;
-        };
+            const partes = dataStr.split('-');
+            // Verifica se está no formato AAAA-MM-DD
+            if (partes.length === 3) {
+                const [ano, mes, dia] = partes;
+                return `${dia}/${mes}/${ano}`;
+            }
+            return dataStr;
+        }
 
-        const badgeStatus = (status) => {
+        function badgeStatus(status) {
             const cores = {
-                'Aguardando Chamada': 'bg-yellow-100 text-yellow-800',
-                'Em Entrevista': 'bg-blue-100 text-blue-800',
-                'Aprovado': 'bg-green-100 text-green-800',
-                'Rejeitado': 'bg-red-100 text-red-800'
+                'Aguardando chamada': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                'Em entrevista': 'bg-blue-100 text-blue-800 border-blue-200',
+                'Aprovado': 'bg-green-100 text-green-800 border-green-200',
+                'Rejeitado': 'bg-red-100 text-red-800 border-red-200'
             };
             const cor = cores[status] || 'bg-gray-100 text-gray-800';
-            return `<span class="px-2.5 py-1 rounded-full text-xs font-medium ${cor}">${status}</span>`;
-        };
+            return `<span class="px-2.5 py-1 rounded-full text-xs font-medium border ${cor}">${status}</span>`;
+        }
 
-        const atualizarInterface = () => {
+        /* Central de atualizações visuais */
+        function atualizarInterface() {
             renderizarTabela();
             verificarNotificacoes();
             renderizarGraficos();
-        };
+        }
 
-        const renderizarTabela = () => {
+        function renderizarTabela() {
             const corpo = document.getElementById('corpo-tabela-vagas');
-            const vazio = document.getElementById('estado-vazio');
+            const estadoVazio = document.getElementById('estado-vazio');
             corpo.innerHTML = '';
 
             if (candidaturas.length === 0) {
-                vazio.classList.remove('hidden');
-                vazio.classList.add('flex');
+                estadoVazio.classList.remove('hidden');
+                estadoVazio.classList.add('flex');
             } else {
-                vazio.classList.add('hidden');
-                vazio.classList.remove('flex');
+                estadoVazio.classList.add('hidden');
+                estadoVazio.classList.remove('flex');
                 
-                // Ordenar por atualização (mais recente primeiro)
+                // Ordena da mais recentemente atualizada para a mais antiga
                 const listaOrdenada = [...candidaturas].sort((a, b) => new Date(b.ultimaAtualizacao) - new Date(a.ultimaAtualizacao));
                 const hoje = new Date();
 
                 listaOrdenada.forEach(vaga => {
-                    const diffDias = Math.floor(Math.abs(hoje - new Date(vaga.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
-                    const estagnada = diffDias >= 7 && (vaga.status !== 'Aprovado' && vaga.status !== 'Rejeitado');
+                    const dataAtualizacao = new Date(vaga.ultimaAtualizacao);
+                    dataAtualizacao.setMinutes(dataAtualizacao.getMinutes() + dataAtualizacao.getTimezoneOffset());
+                    
+                    const diffTempo = Math.abs(hoje - dataAtualizacao);
+                    const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
+                    
+                    const estagnada = diffDias >= 7 && vaga.status !== 'Aprovado' && vaga.status !== 'Rejeitado';
 
                     const tr = document.createElement('tr');
-                    tr.className = `hover:bg-gray-50 transition-colors ${estagnada ? 'bg-amber-50/40' : ''}`;
+                    tr.className = `hover:bg-gray-50 transition-colors ${estagnada ? 'bg-amber-50/30' : ''}`;
                     tr.innerHTML = `
                         <td class="p-3 font-medium text-gray-800">
                             ${vaga.cargo} 
                             ${estagnada ? `<i class="fas fa-clock text-amber-500 text-xs ml-1" title="Sem atualização há ${diffDias} dias"></i>` : ''}
                         </td>
-                        <td class="p-3">${vaga.empresa}</td>
-                        <td class="p-3">${formatarData(vaga.dataCandidatura)}</td>
+                        <td class="p-3 text-gray-600">${vaga.empresa}</td>
+                        <td class="p-3 text-gray-600">${formatarData(vaga.dataCandidatura)}</td>
                         <td class="p-3 text-xs text-gray-500">
-                            ${formatarData(vaga.ultimaAtualizacao)} <br> <span class="opacity-70">(${diffDias}d atrás)</span>
+                            ${formatarData(vaga.ultimaAtualizacao)} <br> <span class="opacity-70">(${diffDias} dias atrás)</span>
                         </td>
                         <td class="p-3">${badgeStatus(vaga.status)}</td>
                         <td class="p-3 text-center flex items-center justify-center gap-2">
-                            <select onchange="window.mudarStatus('${vaga.id}', this.value)" 
-                                class="text-xs border-gray-300 rounded focus:ring-indigo-500 py-1 pl-2 pr-6 bg-white border outline-none">
-                                <option value="" disabled selected>Alterar...</option>
-                                <option value="Aguardando Chamada">Aguardando</option>
-                                <option value="Em Entrevista">Entrevista</option>
+                            <select onchange="mudarStatus('${vaga.id}', this.value)" 
+                                class="text-xs border-gray-300 rounded focus:ring-indigo-500 py-1 pl-2 pr-6 bg-white border outline-none text-gray-600">
+                                <option value="" disabled selected>Mudar status</option>
+                                <option value="Aguardando chamada">Aguardando</option>
+                                <option value="Em entrevista">Entrevista</option>
                                 <option value="Aprovado">Aprovado</option>
                                 <option value="Rejeitado">Rejeitado</option>
                             </select>
-                            <button onclick="window.abrirModalExclusao('${vaga.id}')" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors" title="Excluir Vaga">
+                            <button onclick="abrirModalExclusao('${vaga.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors" title="Excluir vaga">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -406,29 +363,34 @@
                     corpo.appendChild(tr);
                 });
             }
-        };
+        }
 
-        const verificarNotificacoes = () => {
+        function verificarNotificacoes() {
             const hoje = new Date();
-            const estagnadas = candidaturas.filter(vaga => {
+            const vagasEstagnadas = candidaturas.filter(vaga => {
                 if (vaga.status === 'Aprovado' || vaga.status === 'Rejeitado') return false;
-                const diffDias = Math.floor(Math.abs(hoje - new Date(vaga.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
+                
+                const dataAtualizacao = new Date(vaga.ultimaAtualizacao);
+                // Compensar o fuso horário para cálculo correto dos dias
+                dataAtualizacao.setMinutes(dataAtualizacao.getMinutes() + dataAtualizacao.getTimezoneOffset());
+                
+                const diffDias = Math.floor(Math.abs(hoje - dataAtualizacao) / (1000 * 60 * 60 * 24));
                 return diffDias >= 7;
             });
 
             const barra = document.getElementById('barra-notificacao');
-            if (estagnadas.length > 0) {
-                document.getElementById('texto-notificacao').textContent = `Você tem ${estagnadas.length} vaga(s) aguardando sem atualização recente. Avalie fazer um follow-up.`;
+            if (vagasEstagnadas.length > 0) {
+                document.getElementById('texto-notificacao').textContent = `Você tem ${vagasEstagnadas.length} vaga(s) aguardando respostas há uma semana ou mais. Avalie fazer um follow-up.`;
                 barra.classList.remove('hidden');
             } else {
                 barra.classList.add('hidden');
             }
-        };
+        }
 
-        window.alterarTipoGrafico = (tipo) => {
+        /* Lógica dos gráficos */
+        function alterarTipoGrafico(tipo) {
             tipoGraficoAtual = tipo;
             
-            /* Ajustando estilos dos botões de alternância */
             const btnBar = document.getElementById('btn-grafico-bar');
             const btnPie = document.getElementById('btn-grafico-pie');
             
@@ -440,26 +402,44 @@
                 btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all";
             }
             
-            renderizarGraficos(); // Re-renderiza com o novo tipo
-        };
+            renderizarGraficos();
+        }
 
-        const criarOuAtualizarGrafico = (instanciaAtual, ctxId, tipo, labelTitulo, labels, dados, coresBase) => {
-            if (instanciaAtual) instanciaAtual.destroy();
+        function criarGrafico(instanciaAntiga, idCanvas, tipo, titulo, labels, dados, cores) {
+            if (instanciaAntiga) {
+                instanciaAntiga.destroy(); // Necessário destruir antes de recriar no Chart.js
+            }
             
-            const ctx = document.getElementById(ctxId);
+            const ctx = document.getElementById(idCanvas).getContext('2d');
             
-            // Gerenciando opções baseadas no tipo de gráfico
             const opcoes = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: tipo === 'pie', position: 'bottom' },
-                    tooltip: { enabled: true }
+                    legend: { 
+                        display: tipo === 'pie', 
+                        position: 'bottom',
+                        labels: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                        titleFont: { family: "'Inter', sans-serif" },
+                        bodyFont: { family: "'Inter', sans-serif" },
+                        padding: 10,
+                        cornerRadius: 8
+                    }
                 }
             };
 
             if (tipo === 'bar') {
-                opcoes.scales = { y: { beginAtZero: true, ticks: { stepSize: 1 } } };
+                opcoes.scales = {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { stepSize: 1, font: { family: "'Inter', sans-serif" } },
+                        grid: { borderDash: [4, 4] }
+                    },
+                    x: { ticks: { font: { family: "'Inter', sans-serif" } } }
+                };
             }
 
             return new Chart(ctx, {
@@ -467,23 +447,23 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: labelTitulo,
+                        label: titulo,
                         data: dados,
-                        backgroundColor: coresBase.bg,
-                        borderColor: coresBase.border,
+                        backgroundColor: cores.bg,
+                        borderColor: cores.border,
                         borderWidth: 1,
                         borderRadius: tipo === 'bar' ? 4 : 0
                     }]
                 },
                 options: opcoes
             });
-        };
+        }
 
-        const renderizarGraficos = () => {
-            // Contabilizadores para as métricas
+        function renderizarGraficos() {
+            // Contagem dos dados
             const mapaCargos = {};
             const mapaEmpresas = {};
-            const mapaStatus = { 'Aguardando Chamada': 0, 'Em Entrevista': 0, 'Aprovado': 0, 'Rejeitado': 0 };
+            const mapaStatus = { 'Aguardando chamada': 0, 'Em entrevista': 0, 'Aprovado': 0, 'Rejeitado': 0 };
 
             candidaturas.forEach(v => {
                 mapaCargos[v.cargo] = (mapaCargos[v.cargo] || 0) + 1;
@@ -491,26 +471,29 @@
                 if(mapaStatus[v.status] !== undefined) mapaStatus[v.status]++;
             });
 
-            // Extraindo Arrays e ordenando os Top 5 para não poluir o gráfico
+            // Extrair chaves/valores e pegar os top 5 para evitar poluição visual
             const arrCargos = Object.entries(mapaCargos).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const arrEmpresas = Object.entries(mapaEmpresas).sort((a, b) => b[1] - a[1]).slice(0, 5);
             
-            // Paletas de cores para o Chart.js
-            const paletaCargos = { bg: ['rgba(59, 130, 246, 0.6)', 'rgba(99, 102, 241, 0.6)', 'rgba(168, 85, 247, 0.6)', 'rgba(236, 72, 153, 0.6)', 'rgba(244, 63, 94, 0.6)'], border: ['#3b82f6', '#6366f1', '#a855f7', '#ec4899', '#f43f5e'] };
-            const paletaEmpresas = { bg: ['rgba(16, 185, 129, 0.6)', 'rgba(20, 184, 166, 0.6)', 'rgba(6, 182, 212, 0.6)', 'rgba(14, 165, 233, 0.6)', 'rgba(139, 92, 246, 0.6)'], border: ['#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#8b5cf6'] };
-            const paletaStatus = { bg: ['rgba(250, 204, 21, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'], border: ['#facc15', '#3b82f6', '#22c55e', '#ef4444'] };
+            // Definição de paletas modernas e suaves
+            const coresCargos = { 
+                bg: ['rgba(99, 102, 241, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(217, 70, 239, 0.7)', 'rgba(236, 72, 153, 0.7)'], 
+                border: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'] 
+            };
+            const coresEmpresas = { 
+                bg: ['rgba(14, 165, 233, 0.7)', 'rgba(6, 182, 212, 0.7)', 'rgba(20, 184, 166, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(34, 197, 94, 0.7)'], 
+                border: ['#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e'] 
+            };
+            const coresStatus = { 
+                bg: ['rgba(250, 204, 21, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'], 
+                border: ['#facc15', '#3b82f6', '#22c55e', '#ef4444'] 
+            };
 
-            // Renderizando cada gráfico
-            instChartCargos = criarOuAtualizarGrafico(instChartCargos, 'chartCargos', tipoGraficoAtual, 'Nº de Vagas', arrCargos.map(i => i[0]), arrCargos.map(i => i[1]), paletaCargos);
-            
-            instChartEmpresas = criarOuAtualizarGrafico(instChartEmpresas, 'chartEmpresas', tipoGraficoAtual, 'Nº de Vagas', arrEmpresas.map(i => i[0]), arrEmpresas.map(i => i[1]), paletaEmpresas);
-            
-            instChartStatus = criarOuAtualizarGrafico(instChartStatus, 'chartStatus', tipoGraficoAtual, 'Distribuição de Status', Object.keys(mapaStatus), Object.values(mapaStatus), paletaStatus);
-        };
-
-        /* Inicialização ao carregar a janela */
-        window.addEventListener('DOMContentLoaded', iniciarAplicacao);
+            // Renderiza as instâncias chamando a função utilitária
+            instChartCargos = criarGrafico(instChartCargos, 'chartCargos', tipoGraficoAtual, 'Quantidade', arrCargos.map(i => i[0]), arrCargos.map(i => i[1]), coresCargos);
+            instChartEmpresas = criarGrafico(instChartEmpresas, 'chartEmpresas', tipoGraficoAtual, 'Quantidade', arrEmpresas.map(i => i[0]), arrEmpresas.map(i => i[1]), coresEmpresas);
+            instChartStatus = criarGrafico(instChartStatus, 'chartStatus', tipoGraficoAtual, 'Frequência', Object.keys(mapaStatus), Object.values(mapaStatus), coresStatus);
+        }
     </script>
 </body>
 </html>
-```
