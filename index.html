@@ -1,19 +1,20 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreador de Vagas e Candidaturas</title>
+    <title>JobTracker Pro - Dashboard</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom scrollbar for table */
         .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -22,25 +23,31 @@
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col">
 
-    <div id="notification-bar" class="hidden bg-amber-500 text-white px-4 py-3 shadow-md flex justify-between items-center z-50 sticky top-0 transition-all duration-300">
+    <!-- Barra de Notificação para Vagas Estagnadas -->
+    <div id="barra-notificacao" class="hidden bg-amber-500 text-white px-4 py-3 shadow-md flex justify-between items-center z-40 sticky top-0 transition-all duration-300">
         <div class="flex items-center">
             <i class="fas fa-exclamation-triangle mr-3 text-lg"></i>
             <div>
                 <h3 class="font-bold text-sm">Atenção: Vagas sem atualização há mais de 7 dias</h3>
-                <p class="text-xs opacity-90" id="notification-text">Você tem vagas que precisam da sua atenção.</p>
+                <p class="text-xs opacity-90" id="texto-notificacao">Você tem candidaturas que precisam de acompanhamento.</p>
             </div>
         </div>
-        <button onclick="document.getElementById('notification-bar').classList.add('hidden')" class="text-white hover:text-amber-200">
+        <button onclick="document.getElementById('barra-notificacao').classList.add('hidden')" class="text-white hover:text-amber-200 focus:outline-none">
             <i class="fas fa-times"></i>
         </button>
     </div>
 
+    <!-- Cabeçalho -->
     <header class="bg-indigo-600 text-white shadow-lg p-5">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-bold flex items-center gap-2">
-                <i class="fas fa-briefcase"></i> JobTracker Pro
+                <i class="fas fa-briefcase"></i> JobTracker Pro <span class="text-xs bg-indigo-500 px-2 py-1 rounded ml-2">Cloud</span>
             </h1>
-            <div class="text-sm opacity-80" id="current-date-display"></div>
+            <div class="flex items-center gap-4">
+                <span id="status-conexao" class="text-sm flex items-center gap-1 opacity-80">
+                    <i class="fas fa-circle-notch fa-spin text-xs"></i> Conectando...
+                </span>
+            </div>
         </div>
     </header>
 
@@ -48,69 +55,76 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Left Column: Registration Form -->
+            <!-- Formulário de Cadastro -->
             <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
                     <i class="fas fa-plus-circle text-indigo-500"></i> Nova Candidatura
                 </h2>
-                <form id="job-form" class="space-y-4">
+                <form id="formulario-vaga" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cargo / Vaga</label>
-                        <input type="text" id="role" required placeholder="Ex: Engenheiro de Software" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                        <input type="text" id="cargo" required placeholder="Ex: Engenheiro de Software" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                        <input type="text" id="company" required placeholder="Ex: Tech Corp" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                        <input type="text" id="empresa" required placeholder="Ex: Tech Corp" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Data da Candidatura</label>
-                        <input type="date" id="apply-date" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                        <input type="date" id="data-candidatura" required 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status Inicial</label>
                         <select id="status" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="Aguardando Chamada">Aguardando Chamada</option>
                             <option value="Em Entrevista">Em Entrevista</option>
                             <option value="Aprovado">Aprovado</option>
                             <option value="Rejeitado">Rejeitado</option>
                         </select>
                     </div>
-                    <button type="submit" 
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <button type="submit" id="btn-salvar" disabled
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <i class="fas fa-save"></i> Registrar Vaga
                     </button>
                 </form>
             </div>
 
-            <!-- Right Column: Registered Jobs Table -->
+            <!-- Tabela de Candidaturas -->
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
                     <i class="fas fa-list text-indigo-500"></i> Minhas Candidaturas
                 </h2>
                 
-                <div class="table-container overflow-x-auto flex-grow">
-                    <table class="w-full min-w-[600px] text-left border-collapse">
+                <div class="table-container overflow-x-auto flex-grow relative min-h-[300px]">
+                    <!-- Overlay de Carregamento -->
+                    <div id="loading-tabela" class="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                        <div class="text-indigo-600 flex flex-col items-center">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                            <span class="text-sm font-medium">Carregando dados...</span>
+                        </div>
+                    </div>
+
+                    <table class="w-full min-w-[700px] text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm border-b">
                                 <th class="p-3 font-semibold rounded-tl-lg">Cargo</th>
                                 <th class="p-3 font-semibold">Empresa</th>
                                 <th class="p-3 font-semibold">Data Cadastro</th>
-                                <th class="p-3 font-semibold">Última Atualização</th>
+                                <th class="p-3 font-semibold">Atualização</th>
                                 <th class="p-3 font-semibold">Status</th>
-                                <th class="p-3 font-semibold text-center rounded-tr-lg">Ação</th>
+                                <th class="p-3 font-semibold text-center rounded-tr-lg">Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="jobs-table-body" class="text-sm divide-y divide-gray-100">
-                            <!-- Rows will be populated by JS -->
+                        <tbody id="corpo-tabela-vagas" class="text-sm divide-y divide-gray-100">
+                            <!-- Linhas inseridas via JS -->
                         </tbody>
                     </table>
                     
-                    <!-- Empty State -->
-                    <div id="empty-state" class="hidden flex-col items-center justify-center py-10 text-gray-400">
+                    <div id="estado-vazio" class="hidden flex-col items-center justify-center py-10 text-gray-400">
                         <i class="fas fa-inbox text-4xl mb-3"></i>
                         <p>Nenhuma candidatura registrada ainda.</p>
                     </div>
@@ -118,328 +132,384 @@
             </div>
         </div>
 
+        <!-- Dashboard de Métricas -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2 border-b pb-2">
-                <i class="fas fa-chart-pie text-indigo-500"></i> Dashboard de Métricas do Mercado
-            </h2>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4 gap-4">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-indigo-500"></i> Dashboard de Métricas
+                </h2>
+                
+                <!-- Controles do Gráfico -->
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <button onclick="window.alterarTipoGrafico('bar')" id="btn-grafico-bar" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all">
+                        <i class="fas fa-chart-bar mr-1"></i> Barras
+                    </button>
+                    <button onclick="window.alterarTipoGrafico('pie')" id="btn-grafico-pie" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
+                        <i class="fas fa-chart-pie mr-1"></i> Pizza
+                    </button>
+                </div>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Metric 1: Role frequency -->
-                <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                    <div class="flex items-center gap-3 mb-3 text-blue-800">
-                        <div class="bg-blue-200 p-2 rounded-full w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <h3 class="font-semibold text-sm">Vezes que cada cargo foi ofertado</h3>
-                    </div>
-                    <ul id="metric-roles" class="space-y-2 text-sm text-gray-700 max-h-40 overflow-y-auto pr-2 table-container">
-                        <!-- Populated by JS -->
-                    </ul>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 h-[300px]">
+                <div class="flex flex-col items-center h-full">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por Cargo</h3>
+                    <div class="relative w-full h-full flex justify-center"><canvas id="chartCargos"></canvas></div>
                 </div>
-
-                <!-- Metric 2: Company-Role frequency -->
-                <div class="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
-                    <div class="flex items-center gap-3 mb-3 text-emerald-800">
-                        <div class="bg-emerald-200 p-2 rounded-full w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <h3 class="font-semibold text-sm">Vagas abertas pela mesma empresa</h3>
-                    </div>
-                    <ul id="metric-company-role" class="space-y-2 text-sm text-gray-700 max-h-40 overflow-y-auto pr-2 table-container">
-                        <!-- Populated by JS -->
-                    </ul>
+                <div class="flex flex-col items-center h-full">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por Empresa</h3>
+                    <div class="relative w-full h-full flex justify-center"><canvas id="chartEmpresas"></canvas></div>
                 </div>
-
-                <!-- Metric 3: Role across different companies -->
-                <div class="bg-purple-50 rounded-lg p-4 border border-purple-100">
-                    <div class="flex items-center gap-3 mb-3 text-purple-800">
-                        <div class="bg-purple-200 p-2 rounded-full w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-network-wired"></i>
-                        </div>
-                        <h3 class="font-semibold text-sm">Cargo aberto em empresas diferentes</h3>
-                    </div>
-                    <ul id="metric-role-diff-companies" class="space-y-2 text-sm text-gray-700 max-h-40 overflow-y-auto pr-2 table-container">
-                        <!-- Populated by JS -->
-                    </ul>
+                <div class="flex flex-col items-center h-full">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Status Geral</h3>
+                    <div class="relative w-full h-full flex justify-center"><canvas id="chartStatus"></canvas></div>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <script>
-        // State Management
-        let applications = [];
+    <!-- Modal de Confirmação de Exclusão customizado (evitando uso de window.confirm) -->
+    <div id="modal-exclusao" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 fade-in">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 mb-4">
+                    <i class="fas fa-trash-alt text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Excluir candidatura?</h3>
+                <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. A vaga será removida do seu histórico e das métricas.</p>
+                
+                <div class="flex gap-3 w-full">
+                    <button onclick="fecharModalExclusao()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                        Cancelar
+                    </button>
+                    <button id="btn-confirmar-exclusao" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                        Sim, excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Pre-populate with mock data including one that is stagnant (older than 7 days)
-        const initMockData = () => {
-            const today = new Date();
-            
-            // Helper to get past dates
-            const getPastDate = (daysAgo) => {
-                const d = new Date(today);
-                d.setDate(d.getDate() - daysAgo);
-                return d.toISOString().split('T')[0];
-            };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            applications = [
-                {
-                    id: crypto.randomUUID(),
-                    role: 'Engenheiro de Software',
-                    company: 'Tech Corp',
-                    applyDate: getPastDate(10),
-                    lastUpdated: getPastDate(10), // Stagnant (> 7 days)
-                    status: 'Aguardando Chamada'
-                },
-                {
-                    id: crypto.randomUUID(),
-                    role: 'Desenvolvedor Frontend',
-                    company: 'Web Solutions',
-                    applyDate: getPastDate(3),
-                    lastUpdated: getPastDate(3),
-                    status: 'Aguardando Chamada'
-                },
-                {
-                    id: crypto.randomUUID(),
-                    role: 'Engenheiro de Software',
-                    company: 'Web Solutions',
-                    applyDate: getPastDate(2),
-                    lastUpdated: getPastDate(1),
-                    status: 'Em Entrevista'
-                },
-                {
-                    id: crypto.randomUUID(),
-                    role: 'Tech Lead',
-                    company: 'Tech Corp',
-                    applyDate: getPastDate(5),
-                    lastUpdated: getPastDate(5),
-                    status: 'Aguardando Chamada'
+        /* Variáveis Globais de Estado */
+        let candidaturas = [];
+        let userId = null;
+        let db = null;
+        let tipoGraficoAtual = 'bar'; /* Padrão inicia com gráfico de barras */
+        let idVagaParaExcluir = null;
+        
+        /* Instâncias dos Gráficos (Chart.js) */
+        let instChartCargos = null;
+        let instChartEmpresas = null;
+        let instChartStatus = null;
+
+        /* Configuração do Firebase fornecida pelo ambiente */
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const iniciarAplicacao = async () => {
+            document.getElementById('data-candidatura').valueAsDate = new Date();
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                /* Autenticação antes de acessar o Firestore (Regra Crítica) */
+                if (authToken) {
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    await signInAnonymously(auth);
                 }
-            ];
+
+                userId = auth.currentUser.uid;
+                
+                document.getElementById('status-conexao').innerHTML = '<i class="fas fa-check-circle text-green-400"></i> Conectado';
+                document.getElementById('btn-salvar').disabled = false;
+                
+                escutarDados();
+            } catch (error) {
+                console.error("Erro ao inicializar Firebase:", error);
+                document.getElementById('status-conexao').innerHTML = '<i class="fas fa-exclamation-triangle text-amber-400"></i> Erro de conexão';
+            }
         };
 
-        // Format dates safely
-        const formatDate = (dateString) => {
-            if(!dateString) return '-';
-            const [year, month, day] = dateString.split('-');
-            return `${day}/${month}/${year}`;
+        /* Busca em tempo real da coleção privada do usuário */
+        const escutarDados = () => {
+            if (!userId) return;
+            
+            const caminhoColecao = collection(db, 'artifacts', appId, 'users', userId, 'candidaturas');
+            
+            onSnapshot(caminhoColecao, (snapshot) => {
+                candidaturas = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                document.getElementById('loading-tabela').classList.add('hidden');
+                atualizarInterface();
+            }, (error) => {
+                console.error("Erro ao buscar dados:", error);
+            });
         };
 
-        // Determine badge styles based on status
-        const getStatusBadge = (status) => {
-            const styles = {
-                'Aguardando Chamada': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                'Em Entrevista': 'bg-blue-100 text-blue-800 border-blue-200',
-                'Aprovado': 'bg-green-100 text-green-800 border-green-200',
-                'Rejeitado': 'bg-red-100 text-red-800 border-red-200'
+        /* Tratamento de Envio do Formulário (Create) */
+        document.getElementById('formulario-vaga').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!userId || !db) return;
+
+            const btn = document.getElementById('btn-salvar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+            const novaCandidatura = {
+                cargo: document.getElementById('cargo').value.trim(),
+                empresa: document.getElementById('empresa').value.trim(),
+                dataCandidatura: document.getElementById('data-candidatura').value,
+                ultimaAtualizacao: document.getElementById('data-candidatura').value,
+                status: document.getElementById('status').value
             };
-            const style = styles[status] || 'bg-gray-100 text-gray-800 border-gray-200';
-            return `<span class="px-2.5 py-1 rounded-full text-xs font-medium border ${style}">${status}</span>`;
+
+            try {
+                const caminhoColecao = collection(db, 'artifacts', appId, 'users', userId, 'candidaturas');
+                await addDoc(caminhoColecao, novaCandidatura);
+                e.target.reset();
+                document.getElementById('data-candidatura').valueAsDate = new Date();
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Registrar Vaga';
+            }
+        });
+
+        /* Expondo funções para uso inline no HTML (Atualizar Status e Deletar) */
+        window.mudarStatus = async (id, novoStatus) => {
+            if (!userId || !db || !novoStatus) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'candidaturas', id);
+                await updateDoc(docRef, {
+                    status: novoStatus,
+                    ultimaAtualizacao: new Date().toISOString().split('T')[0]
+                });
+            } catch (error) {
+                console.error("Erro ao atualizar status:", error);
+            }
         };
+
+        window.abrirModalExclusao = (id) => {
+            idVagaParaExcluir = id;
+            document.getElementById('modal-exclusao').classList.remove('hidden');
+        };
+
+        window.fecharModalExclusao = () => {
+            idVagaParaExcluir = null;
+            document.getElementById('modal-exclusao').classList.add('hidden');
+        };
+
+        document.getElementById('btn-confirmar-exclusao').addEventListener('click', async () => {
+            if (!userId || !db || !idVagaParaExcluir) return;
+            
+            const btn = document.getElementById('btn-confirmar-exclusao');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'candidaturas', idVagaParaExcluir);
+                await deleteDoc(docRef); // A exclusão isolada que atualiza automaticamente as métricas via onSnapshot
+                window.fecharModalExclusao();
+            } catch (error) {
+                console.error("Erro ao excluir:", error);
+            } finally {
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
+        });
 
         
-        // Render Table
-        const renderTable = () => {
-            const tbody = document.getElementById('jobs-table-body');
-            const emptyState = document.getElementById('empty-state');
-            const today = new Date();
+        /* Utilitários de Interface */
+        const formatarData = (dataStr) => {
+            if(!dataStr) return '-';
+            const [a, m, d] = dataStr.split('-');
+            return `${d}/${m}/${a}`;
+        };
 
-            tbody.innerHTML = '';
+        const badgeStatus = (status) => {
+            const cores = {
+                'Aguardando Chamada': 'bg-yellow-100 text-yellow-800',
+                'Em Entrevista': 'bg-blue-100 text-blue-800',
+                'Aprovado': 'bg-green-100 text-green-800',
+                'Rejeitado': 'bg-red-100 text-red-800'
+            };
+            const cor = cores[status] || 'bg-gray-100 text-gray-800';
+            return `<span class="px-2.5 py-1 rounded-full text-xs font-medium ${cor}">${status}</span>`;
+        };
 
-            if (applications.length === 0) {
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
+        const atualizarInterface = () => {
+            renderizarTabela();
+            verificarNotificacoes();
+            renderizarGraficos();
+        };
+
+        const renderizarTabela = () => {
+            const corpo = document.getElementById('corpo-tabela-vagas');
+            const vazio = document.getElementById('estado-vazio');
+            corpo.innerHTML = '';
+
+            if (candidaturas.length === 0) {
+                vazio.classList.remove('hidden');
+                vazio.classList.add('flex');
             } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
+                vazio.classList.add('hidden');
+                vazio.classList.remove('flex');
+                
+                // Ordenar por atualização (mais recente primeiro)
+                const listaOrdenada = [...candidaturas].sort((a, b) => new Date(b.ultimaAtualizacao) - new Date(a.ultimaAtualizacao));
+                const hoje = new Date();
 
-                // Sort by lastUpdated desc
-                const sortedApps = [...applications].sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-
-                sortedApps.forEach(app => {
-                    // Check if stagnant
-                    const lastUpdatedDate = new Date(app.lastUpdated);
-                    const diffTime = Math.abs(today - lastUpdatedDate);
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    const isStagnant = diffDays >= 7 && (app.status !== 'Aprovado' && app.status !== 'Rejeitado');
+                listaOrdenada.forEach(vaga => {
+                    const diffDias = Math.floor(Math.abs(hoje - new Date(vaga.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
+                    const estagnada = diffDias >= 7 && (vaga.status !== 'Aprovado' && vaga.status !== 'Rejeitado');
 
                     const tr = document.createElement('tr');
-                    tr.className = `hover:bg-gray-50 transition-colors fade-in ${isStagnant ? 'bg-amber-50/30' : ''}`;
+                    tr.className = `hover:bg-gray-50 transition-colors ${estagnada ? 'bg-amber-50/40' : ''}`;
                     tr.innerHTML = `
-                        <td class="p-3 whitespace-nowrap font-medium text-gray-800">
-                            ${app.role} 
-                            ${isStagnant ? '<i class="fas fa-clock text-amber-500 text-xs ml-1" title="Sem atualização há 7+ dias"></i>' : ''}
+                        <td class="p-3 font-medium text-gray-800">
+                            ${vaga.cargo} 
+                            ${estagnada ? `<i class="fas fa-clock text-amber-500 text-xs ml-1" title="Sem atualização há ${diffDias} dias"></i>` : ''}
                         </td>
-                        <td class="p-3 whitespace-nowrap">${app.company}</td>
-                        <td class="p-3 whitespace-nowrap">${formatDate(app.applyDate)}</td>
-                        <td class="p-3 whitespace-nowrap text-xs text-gray-500">
-                            ${formatDate(app.lastUpdated)} <br> (${diffDays} dias atrás)
+                        <td class="p-3">${vaga.empresa}</td>
+                        <td class="p-3">${formatarData(vaga.dataCandidatura)}</td>
+                        <td class="p-3 text-xs text-gray-500">
+                            ${formatarData(vaga.ultimaAtualizacao)} <br> <span class="opacity-70">(${diffDias}d atrás)</span>
                         </td>
-                        <td class="p-3 whitespace-nowrap">${getStatusBadge(app.status)}</td>
-                        <td class="p-3 whitespace-nowrap text-center">
-                            <select onchange="handleStatusChange('${app.id}', this.value)" 
-                                class="text-xs border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 py-1 pl-2 pr-6">
-                                <option value="" disabled selected>Atualizar...</option>
+                        <td class="p-3">${badgeStatus(vaga.status)}</td>
+                        <td class="p-3 text-center flex items-center justify-center gap-2">
+                            <select onchange="window.mudarStatus('${vaga.id}', this.value)" 
+                                class="text-xs border-gray-300 rounded focus:ring-indigo-500 py-1 pl-2 pr-6 bg-white border outline-none">
+                                <option value="" disabled selected>Alterar...</option>
                                 <option value="Aguardando Chamada">Aguardando</option>
                                 <option value="Em Entrevista">Entrevista</option>
                                 <option value="Aprovado">Aprovado</option>
                                 <option value="Rejeitado">Rejeitado</option>
                             </select>
+                            <button onclick="window.abrirModalExclusao('${vaga.id}')" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors" title="Excluir Vaga">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     `;
-                    tbody.appendChild(tr);
+                    corpo.appendChild(tr);
                 });
             }
         };
 
-        
-        // Notifications Check
-        const checkNotifications = () => {
-            const today = new Date();
-            const stagnantJobs = applications.filter(app => {
-                // We only care about pending jobs being stagnant
-                if (app.status === 'Aprovado' || app.status === 'Rejeitado') return false;
-                
-                const lastUpdate = new Date(app.lastUpdated);
-                const diffTime = Math.abs(today - lastUpdate);
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                return diffDays >= 7;
+        const verificarNotificacoes = () => {
+            const hoje = new Date();
+            const estagnadas = candidaturas.filter(vaga => {
+                if (vaga.status === 'Aprovado' || vaga.status === 'Rejeitado') return false;
+                const diffDias = Math.floor(Math.abs(hoje - new Date(vaga.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
+                return diffDias >= 7;
             });
 
-            const bar = document.getElementById('notification-bar');
-            const text = document.getElementById('notification-text');
-
-            if (stagnantJobs.length > 0) {
-                text.textContent = `Você tem ${stagnantJobs.length} vaga(s) aguardando há mais de 1 semana sem atualização de status. Tente realizar um follow-up!`;
-                bar.classList.remove('hidden');
+            const barra = document.getElementById('barra-notificacao');
+            if (estagnadas.length > 0) {
+                document.getElementById('texto-notificacao').textContent = `Você tem ${estagnadas.length} vaga(s) aguardando sem atualização recente. Avalie fazer um follow-up.`;
+                barra.classList.remove('hidden');
             } else {
-                bar.classList.add('hidden');
+                barra.classList.add('hidden');
             }
         };
 
-        // Render Dashboard Metrics
-        const renderMetrics = () => {
-            // 1. vezes que cada cargo foi ofertado (Count by role)
-            const roleCounts = {};
-            // 2. vezes que a empresa abriu a respectiva vaga (Count by company + role)
-            const companyRoleCounts = {};
-            // 3. vagas abertas em empresas diferentes (Unique companies per role)
-            const roleCompaniesMap = {};
+        window.alterarTipoGrafico = (tipo) => {
+            tipoGraficoAtual = tipo;
+            
+            /* Ajustando estilos dos botões de alternância */
+            const btnBar = document.getElementById('btn-grafico-bar');
+            const btnPie = document.getElementById('btn-grafico-pie');
+            
+            if (tipo === 'bar') {
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all";
+                btnPie.className = "px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all";
+            } else {
+                btnPie.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all";
+            }
+            
+            renderizarGraficos(); // Re-renderiza com o novo tipo
+        };
 
-            applications.forEach(app => {
-                // Metric 1
-                roleCounts[app.role] = (roleCounts[app.role] || 0) + 1;
-                
-                // Metric 2
-                const compRoleKey = `${app.company} - ${app.role}`;
-                companyRoleCounts[compRoleKey] = (companyRoleCounts[compRoleKey] || 0) + 1;
-
-                // Metric 3
-                if (!roleCompaniesMap[app.role]) {
-                    roleCompaniesMap[app.role] = new Set();
+        const criarOuAtualizarGrafico = (instanciaAtual, ctxId, tipo, labelTitulo, labels, dados, coresBase) => {
+            if (instanciaAtual) instanciaAtual.destroy();
+            
+            const ctx = document.getElementById(ctxId);
+            
+            // Gerenciando opções baseadas no tipo de gráfico
+            const opcoes = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: tipo === 'pie', position: 'bottom' },
+                    tooltip: { enabled: true }
                 }
-                roleCompaniesMap[app.role].add(app.company);
+            };
+
+            if (tipo === 'bar') {
+                opcoes.scales = { y: { beginAtZero: true, ticks: { stepSize: 1 } } };
+            }
+
+            return new Chart(ctx, {
+                type: tipo,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelTitulo,
+                        data: dados,
+                        backgroundColor: coresBase.bg,
+                        borderColor: coresBase.border,
+                        borderWidth: 1,
+                        borderRadius: tipo === 'bar' ? 4 : 0
+                    }]
+                },
+                options: opcoes
+            });
+        };
+
+        const renderizarGraficos = () => {
+            // Contabilizadores para as métricas
+            const mapaCargos = {};
+            const mapaEmpresas = {};
+            const mapaStatus = { 'Aguardando Chamada': 0, 'Em Entrevista': 0, 'Aprovado': 0, 'Rejeitado': 0 };
+
+            candidaturas.forEach(v => {
+                mapaCargos[v.cargo] = (mapaCargos[v.cargo] || 0) + 1;
+                mapaEmpresas[v.empresa] = (mapaEmpresas[v.empresa] || 0) + 1;
+                if(mapaStatus[v.status] !== undefined) mapaStatus[v.status]++;
             });
 
-            // Update DOM Helper
-            const updateList = (elementId, dataObject, templateFn) => {
-                const el = document.getElementById(elementId);
-                el.innerHTML = '';
-                const entries = Object.entries(dataObject).sort((a, b) => b[1] - a[1] || (b[1].size > a[1].size ? 1 : -1));
-                
-                if(entries.length === 0) {
-                    el.innerHTML = '<li class="text-gray-400 italic text-xs">Sem dados suficientes</li>';
-                    return;
-                }
+            // Extraindo Arrays e ordenando os Top 5 para não poluir o gráfico
+            const arrCargos = Object.entries(mapaCargos).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const arrEmpresas = Object.entries(mapaEmpresas).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            // Paletas de cores para o Chart.js
+            const paletaCargos = { bg: ['rgba(59, 130, 246, 0.6)', 'rgba(99, 102, 241, 0.6)', 'rgba(168, 85, 247, 0.6)', 'rgba(236, 72, 153, 0.6)', 'rgba(244, 63, 94, 0.6)'], border: ['#3b82f6', '#6366f1', '#a855f7', '#ec4899', '#f43f5e'] };
+            const paletaEmpresas = { bg: ['rgba(16, 185, 129, 0.6)', 'rgba(20, 184, 166, 0.6)', 'rgba(6, 182, 212, 0.6)', 'rgba(14, 165, 233, 0.6)', 'rgba(139, 92, 246, 0.6)'], border: ['#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#8b5cf6'] };
+            const paletaStatus = { bg: ['rgba(250, 204, 21, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'], border: ['#facc15', '#3b82f6', '#22c55e', '#ef4444'] };
 
-                entries.forEach(([key, val]) => {
-                    const li = document.createElement('li');
-                    li.className = "flex justify-between items-center bg-white/50 px-3 py-2 rounded shadow-sm";
-                    li.innerHTML = templateFn(key, val);
-                    el.appendChild(li);
-                });
-            };
-
-            updateList('metric-roles', roleCounts, (key, count) => `
-                <span class="truncate pr-2 font-medium">${key}</span>
-                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full">${count}x</span>
-            `);
-
-            updateList('metric-company-role', companyRoleCounts, (key, count) => `
-                <span class="truncate pr-2 text-xs">${key}</span>
-                <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded-full">${count}x</span>
-            `);
-
-            updateList('metric-role-diff-companies', roleCompaniesMap, (key, set) => `
-                <span class="truncate pr-2 text-xs font-medium">${key}</span>
-                <span class="text-xs text-gray-500 whitespace-nowrap">${set.size} empresa(s)</span>
-            `);
+            // Renderizando cada gráfico
+            instChartCargos = criarOuAtualizarGrafico(instChartCargos, 'chartCargos', tipoGraficoAtual, 'Nº de Vagas', arrCargos.map(i => i[0]), arrCargos.map(i => i[1]), paletaCargos);
+            
+            instChartEmpresas = criarOuAtualizarGrafico(instChartEmpresas, 'chartEmpresas', tipoGraficoAtual, 'Nº de Vagas', arrEmpresas.map(i => i[0]), arrEmpresas.map(i => i[1]), paletaEmpresas);
+            
+            instChartStatus = criarOuAtualizarGrafico(instChartStatus, 'chartStatus', tipoGraficoAtual, 'Distribuição de Status', Object.keys(mapaStatus), Object.values(mapaStatus), paletaStatus);
         };
 
-        // Master UI Update function
-        const updateUI = () => {
-            renderTable();
-            renderMetrics();
-            checkNotifications();
-        };
-
-        
-        // Handle form submission
-        document.getElementById('job-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const role = document.getElementById('role').value.trim();
-            const company = document.getElementById('company').value.trim();
-            const applyDate = document.getElementById('apply-date').value;
-            const status = document.getElementById('status').value;
-
-            if(!role || !company || !applyDate || !status) return;
-
-            const newApp = {
-                id: crypto.randomUUID(),
-                role,
-                company,
-                applyDate,
-                lastUpdated: applyDate, // Initializes lastUpdated with apply date
-                status
-            };
-
-            applications.push(newApp);
-            
-            // Reset form
-            this.reset();
-            // Default current date for input
-            document.getElementById('apply-date').valueAsDate = new Date();
-
-            updateUI();
-        });
-
-        // Handle Status Change from Table
-        window.handleStatusChange = (id, newStatus) => {
-            if(!newStatus) return;
-            
-            const index = applications.findIndex(app => app.id === id);
-            if (index !== -1) {
-                applications[index].status = newStatus;
-                // Update the lastUpdated timestamp to today
-                applications[index].lastUpdated = new Date().toISOString().split('T')[0];
-                updateUI();
-            }
-        };
-
-        // Initializer
-        window.addEventListener('DOMContentLoaded', () => {
-            // Setup Date display
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date-display').textContent = new Date().toLocaleDateString('pt-BR', options);
-            
-            // Set default date in form
-            document.getElementById('apply-date').valueAsDate = new Date();
-
-            initMockData();
-            updateUI();
-        });
+        /* Inicialização ao carregar a janela */
+        window.addEventListener('DOMContentLoaded', iniciarAplicacao);
     </script>
 </body>
 </html>
