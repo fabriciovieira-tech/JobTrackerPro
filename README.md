@@ -1,8 +1,8 @@
 # 💼 JobTracker Pro — Gestor de candidaturas e métricas de mercado
 
-O **JobTracker Pro** é uma aplicação web intuitiva e centralizada, desenvolvida para simplificar a organização da sua busca por emprego. Com ele, é feito o registro de candidaturas, acompanha o andamento de cada processo seletivo em tempo real e recebe alertas automáticos sobre vagas que precisam de acompanhamento.
+O **JobTracker Pro** é uma aplicação web intuitiva e centralizada, desenvolvida para simplificar a organização da sua busca por emprego. Com ele, você registra suas candidaturas, acompanha o andamento de cada processo seletivo em tempo real e recebe alertas automáticos sobre vagas que precisam de acompanhamento.
 
-A nova versão traz armazenamento seguro na nuvem e um painel de métricas interativo, transformando seu histórico de candidaturas em **dados estratégicos** para compreender padrões do mercado de trabalho.
+Esta versão conta com armazenamento local seguro (`localStorage`), garantindo funcionamento **100% offline**, resposta imediata e zero necessidade de configurações externas ou chaves de API.
 
 ---
 
@@ -13,17 +13,17 @@ A nova versão traz armazenamento seguro na nuvem e um painel de métricas inter
 - 🔄 **Gestão completa de status:** Altere o status da vaga (*Aguardando chamada, Em entrevista, Aprovado, Rejeitado*) diretamente na tabela.
 - 🗑️ **Exclusão isolada de registros:** Remova candidaturas indesejadas com segurança por meio de um modal de confirmação, garantindo que o restante do seu histórico não seja afetado.
 - ⏰ **Alertas de estagnação (follow-up):** Notificação automática na parte superior da tela e identificadores visuais para vagas que estão há mais de **7 dias sem atualização**.
-- 📈 **Dashboard de métricas interativo:** Acompanhe dados como frequência de cargos, recorrência por empresas e status geral. Agora com **suporte a alternância de visualização** entre gráficos de barras e gráficos de pizza, adaptando-se à sua preferência.
-- ☁️ **Persistência em nuvem (Firebase):** Seus dados são salvos em tempo real e com segurança na nuvem. Você pode fechar a página ou atualizar o navegador sem medo de perder nenhuma informação.
+- 📈 **Dashboard de métricas interativo:** Acompanhe dados como frequência de cargos, recorrência por empresas e status geral com suporte à **alternância de visualização** entre gráficos de barras e gráficos de pizza.
+- 💾 **Persistência local (`localStorage`):** Seus dados são salvos em tempo real diretamente no seu navegador. Você pode fechar a página ou reiniciar o computador sem perder suas candidaturas.
 
 ---
 
 ## 🚀 Como executar o projeto
 
-Como o **JobTracker Pro** foi desenvolvido como uma aplicação web de página única (SPA), executá-lo é extremamente simples. 
+Como o **JobTracker Pro** funciona inteiramente no lado do cliente (client-side), executá-lo é extremamente simples e não exige instalação de dependências ou servidores.
 
 ### Pré-requisitos
-Um navegador web moderno com acesso à internet (para carregar os estilos, ícones, gráficos e conectar ao banco de dados).
+Um navegador web moderno (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari, etc.).
 
 ### Passo a passo
 
@@ -39,15 +39,13 @@ Um navegador web moderno com acesso à internet (para carregar os estilos, ícon
    - Dê um duplo clique no arquivo `index.html`; **ou**
    - Arraste o arquivo `index.html` e solte dentro do seu navegador aberto.
 
-*(Nota para desenvolvedores: Para que o salvamento em nuvem funcione no seu próprio repositório, insira as credenciais do seu projeto Firebase nas variáveis globais no início do script).*
-
 ---
 
 ## 📖 Como usar
 
 1. **Registrar uma vaga:**
    - Preencha o formulário na lateral esquerda com o **Cargo**, a **Empresa**, a **Data da candidatura** e o **Status inicial**.
-   - Clique em **Registrar vaga**. A candidatura aparecerá imediatamente na tabela ao lado e será salva na nuvem.
+   - Clique em **Registrar vaga**. A candidatura aparecerá imediatamente na tabela ao lado e será salva no navegador.
 
 2. **Atualizar ou excluir o andamento:**
    - Na tabela de candidaturas, navegue até a coluna **Ações**.
@@ -66,7 +64,7 @@ Um navegador web moderno com acesso à internet (para carregar os estilos, ícon
 ## 📂 Estrutura do projeto
 
 ```text
-├── index.html        # Aplicação completa (HTML, Tailwind CSS, Chart.js e Lógica Firebase)
+├── index.html        # Aplicação completa (HTML, Tailwind CSS, Chart.js e Lógica com localStorage)
 └── README.md         # Documentação e guia de uso do projeto
 ```
 
