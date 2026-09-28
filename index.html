@@ -227,6 +227,15 @@
             atualizarInterface();
         }
 
+        function alterarStatusVaga(id, novoStatus) {
+            const vaga = candidaturas.find(v => v.id === id);
+            if (vaga) {
+                vaga.status = novoStatus;
+                sincronizarLocal();
+                atualizarInterface();
+            }
+        }
+
         function excluirVaga(id) {
             candidaturas = candidaturas.filter(vaga => vaga.id !== id);
             
@@ -376,10 +385,10 @@
                 }
 
                 let statusBadge = "bg-slate-100 text-slate-700 border-slate-200/60";
-                if(vaga.status === 'aprovado') statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
-                if(vaga.status === 'rejeitado') statusBadge = "bg-rose-50 text-rose-700 border-rose-200/60";
-                if(vaga.status === 'em entrevista') statusBadge = "bg-blue-50 text-blue-700 border-blue-200/60";
-                if(vaga.status === 'aguardando chamada') statusBadge = "bg-amber-50 text-amber-700 border-amber-200/60";
+                if(vaga.status === 'aprovado') statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-semibold";
+                if(vaga.status === 'rejeitado') statusBadge = "bg-rose-50 text-rose-700 border-rose-200/80 font-semibold";
+                if(vaga.status === 'em entrevista') statusBadge = "bg-blue-50 text-blue-700 border-blue-200/80 font-semibold";
+                if(vaga.status === 'aguardando chamada') statusBadge = "bg-amber-50 text-amber-700 border-amber-200/80 font-semibold";
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition-colors";
@@ -389,9 +398,12 @@
                     <td class="px-4 py-3 text-slate-600">${vaga.empresa}</td>
                     <td class="px-4 py-3 text-slate-500 text-xs font-medium">${dataExibicao}</td>
                     <td class="px-4 py-3">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusBadge}">
-                            ${vaga.status}
-                        </span>
+                        <select onchange="alterarStatusVaga('${vaga.id}', this.value)" class="text-xs rounded-xl px-2.5 py-1 border transition outline-none cursor-pointer ${statusBadge}">
+                            <option value="aguardando chamada" ${vaga.status === 'aguardando chamada' ? 'selected' : ''}>aguardando chamada</option>
+                            <option value="em entrevista" ${vaga.status === 'em entrevista' ? 'selected' : ''}>em entrevista</option>
+                            <option value="rejeitado" ${vaga.status === 'rejeitado' ? 'selected' : ''}>rejeitado</option>
+                            <option value="aprovado" ${vaga.status === 'aprovado' ? 'selected' : ''}>aprovado</option>
+                        </select>
                     </td>
                     <td class="px-4 py-3 text-right">
                         <button onclick="excluirVaga('${vaga.id}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg text-xs font-semibold transition">
