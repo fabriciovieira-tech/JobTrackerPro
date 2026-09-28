@@ -1,498 +1,579 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreador de candidaturas</title>
-    
-    <!-- Importando Tailwind CSS, FontAwesome e Chart.js -->
+    <title>JobTracker Pro - Gestão de Candidaturas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <!-- Plugin de DataLabels para Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f3f4f6; 
+        /* Personalização fina para barras de rolagem internas */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
-        
-        .fade-in { 
-            animation: fadeIn 0.3s ease-in-out; 
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.8);
+            border-radius: 8px;
         }
-        
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(-10px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
         }
-        
-        /* Estilização da barra de rolagem para tabelas */
-        .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
-        .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .table-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        .table-container::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/40 text-slate-800 font-sans p-4 sm:p-6 lg:p-8 min-h-screen selection:bg-blue-500 selection:text-white antialiased">
 
-    <!-- Barra de notificação -->
-    <div id="barra-notificacao" class="hidden bg-amber-500 text-white px-4 py-3 shadow-md flex justify-between items-center z-40 sticky top-0 transition-all duration-300">
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-triangle mr-3 text-lg"></i>
-            <div>
-                <h3 class="font-bold text-sm">Atenção: existem vagas sem atualização há mais de 7 dias</h3>
-                <p class="text-xs opacity-90" id="texto-notificacao">Você tem candidaturas que precisam de acompanhamento.</p>
-            </div>
-        </div>
-        <button onclick="document.getElementById('barra-notificacao').classList.add('hidden')" class="text-white hover:text-amber-200 focus:outline-none">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-
-    <!-- Cabeçalho -->
-    <header class="bg-indigo-600 text-white shadow-lg p-5">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <h1 class="text-2xl font-bold flex items-center gap-2">
-                <i class="fas fa-briefcase"></i> JobTracker Pro
-            </h1>
-            <div class="flex items-center gap-4">
-                <span class="text-sm flex items-center gap-1 opacity-80" title="Seus dados estão sendo salvos localmente neste navegador">
-                    <i class="fas fa-hdd text-xs"></i> Dados locais
-                </span>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6 space-y-6">
+    <div class="max-w-7xl mx-auto space-y-8">
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Cabeçalho Principal -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-blue-600 rounded-xl text-white shadow-md shadow-blue-500/20">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
+                        JobTracker Pro
+                    </h1>
+                </div>
+                <p class="text-slate-500 text-xs sm:text-sm font-medium">Acompanhe suas candidaturas e analise métricas de mercado em tempo real</p>
+            </div>
             
-            <!-- Formulário de cadastro -->
-            <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
-                    <i class="fas fa-plus-circle text-indigo-500"></i> Nova candidatura
-                </h2>
-                <form id="formulario-vaga" class="space-y-4">
+            <div id="notificacao-barra" class="hidden w-full md:w-auto bg-amber-50 text-amber-800 px-4 py-3 rounded-xl shadow-xs text-xs sm:text-sm border border-amber-200/80 font-medium flex items-center gap-2 animate-pulse">
+            </div>
+        </header>
+
+        <!-- Seção Superior: Formulário e Histórico -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Card de Cadastro -->
+            <section class="lg:col-span-1 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition-all duration-300 h-fit">
+                <div class="flex items-center gap-2 mb-5 border-b border-slate-100 pb-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Nova Candidatura</h2>
+                </div>
+                
+                <form id="form-vaga" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cargo / Vaga</label>
-                        <input type="text" id="cargo" required placeholder="Ex: Desenvolvedor front-end" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Cargo Desejado</label>
+                        <input type="text" id="cargo" required class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm" placeholder="ex: Engenheiro de Software">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                        <input type="text" id="empresa" required placeholder="Ex: Tech solutions" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Empresa</label>
+                        <input type="text" id="empresa" required class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm" placeholder="ex: Tech Corp">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data da candidatura</label>
-                        <input type="date" id="data-candidatura" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Data da Candidatura</label>
+                        <input type="date" id="data" required class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status inicial</label>
-                        <select id="status" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="Aguardando chamada">Aguardando chamada</option>
-                            <option value="Em entrevista">Em entrevista</option>
-                            <option value="Aprovado">Aprovado</option>
-                            <option value="Rejeitado">Rejeitado</option>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status Atual</label>
+                        <select id="status" class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm">
+                            <option value="aguardando chamada">Aguardando chamada</option>
+                            <option value="em entrevista">Em entrevista</option>
+                            <option value="rejeitado">Rejeitado</option>
+                            <option value="aprovado">Aprovado</option>
                         </select>
                     </div>
-                    <button type="submit" id="btn-salvar"
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> Registrar vaga
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md shadow-blue-500/20 active:scale-[0.99] text-sm mt-2 flex items-center justify-center gap-2">
+                        <span>Registrar Candidatura</span>
                     </button>
                 </form>
-            </div>
+            </section>
 
-            <!-- Tabela de candidaturas -->
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
-                    <i class="fas fa-list text-indigo-500"></i> Minhas candidaturas
-                </h2>
-                
-                <div class="table-container overflow-x-auto flex-grow relative min-h-[300px]">
-                    <table class="w-full min-w-[700px] text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 text-gray-600 text-sm border-b">
-                                <th class="p-3 font-semibold rounded-tl-lg">Cargo</th>
-                                <th class="p-3 font-semibold">Empresa</th>
-                                <th class="p-3 font-semibold">Cadastro</th>
-                                <th class="p-3 font-semibold">Última atualização</th>
-                                <th class="p-3 font-semibold">Status</th>
-                                <th class="p-3 font-semibold text-center rounded-tr-lg">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corpo-tabela-vagas" class="text-sm divide-y divide-gray-100">
-                            <!-- Linhas inseridas via JS -->
-                        </tbody>
-                    </table>
+            <!-- Card da Tabela de Candidaturas -->
+            <section class="lg:col-span-2 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-full hover:shadow-md transition-all duration-300">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4 border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Histórico de Candidaturas</h2>
+                    </div>
                     
-                    <div id="estado-vazio" class="hidden flex-col items-center justify-center py-10 text-gray-400">
-                        <i class="fas fa-inbox text-4xl mb-3"></i>
-                        <p>Nenhuma candidatura registrada ainda.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3.5 rounded-xl transition shadow-xs shadow-emerald-600/20 flex items-center gap-1.5 active:scale-[0.98]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Exportar CSV</span>
+                        </button>
+                        <label class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2.5 px-3.5 rounded-xl transition shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-[0.98]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>Importar CSV</span>
+                            <input type="file" id="input-csv" accept=".csv" class="hidden" onchange="importarCSV(event)">
+                        </label>
                     </div>
                 </div>
-            </div>
+
+                <div class="overflow-x-auto flex-1 max-h-[420px] custom-scrollbar rounded-xl border border-slate-100">
+                    <table class="min-w-full divide-y divide-slate-200/60 text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-50/80 sticky top-0 backdrop-blur-md z-10 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                            <tr>
+                                <th class="px-4 py-3.5">ID</th>
+                                <th class="px-4 py-3.5">Cargo</th>
+                                <th class="px-4 py-3.5">Empresa</th>
+                                <th class="px-4 py-3.5">Data</th>
+                                <th class="px-4 py-3.5">Status</th>
+                                <th class="px-4 py-3.5 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-corpo" class="divide-y divide-slate-100 bg-white">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
-        <!-- Dashboard de métricas -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4 gap-4">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-indigo-500"></i> Dashboard de métricas
-                </h2>
+        <!-- Seção Inferior: Dashboard de Métricas -->
+        <section class="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 mt-8 hover:shadow-md transition-all duration-300">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Dashboard de Métricas de Mercado</h2>
+                </div>
                 
-                <!-- Controles do gráfico -->
-                <div class="flex bg-gray-100 p-1 rounded-lg">
-                    <button onclick="alterarTipoGrafico('bar')" id="btn-grafico-bar" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all">
-                        <i class="fas fa-chart-bar mr-1"></i> Barras
-                    </button>
-                    <button onclick="alterarTipoGrafico('pie')" id="btn-grafico-pie" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
-                        <i class="fas fa-chart-pie mr-1"></i> Pizza
-                    </button>
+                <!-- Toggle de tipo de gráfico em segmented control -->
+                <div class="flex gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
+                    <button id="btn-barras" class="bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition">Barras</button>
+                    <button id="btn-pizza" class="text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition">Pizza</button>
+                </div>
+            </div>
+
+            <!-- Cartões de Indicadores -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-blue-300 transition">
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total de Candidaturas</span>
+                    <p id="metric-total" class="text-4xl font-extrabold text-blue-900">0</p>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-emerald-300 transition">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Empresas Distintas</span>
+                    <p id="metric-empresas" class="text-4xl font-extrabold text-emerald-900">0</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-purple-300 transition">
+                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Cargos Distintos</span>
+                    <p id="metric-cargos" class="text-4xl font-extrabold text-purple-900">0</p>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 h-[300px]">
-                <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por cargo</h3>
-                    <div class="relative w-full h-full flex justify-center"><canvas id="chartCargos"></canvas></div>
+            <!-- Conteineres dos Gráficos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="border border-slate-200/70 rounded-2xl p-5 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Ofertas por Empresa</h3>
+                    <div class="h-64 relative">
+                        <canvas id="graficoEmpresas"></canvas>
+                    </div>
+                    <div id="legenda-graficoEmpresas" class="hidden mt-4 pt-3 border-t border-slate-200/60"></div>
                 </div>
-                <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Vagas por empresa</h3>
-                    <div class="relative w-full h-full flex justify-center"><canvas id="chartEmpresas"></canvas></div>
-                </div>
-                <div class="flex flex-col items-center h-full">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Status geral</h3>
-                    <div class="relative w-full h-full flex justify-center"><canvas id="chartStatus"></canvas></div>
-                </div>
-            </div>
-        </div>
-    </main>
 
-    <!-- Modal de exclusão -->
-    <div id="modal-exclusao" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 fade-in">
-            <div class="flex flex-col items-center text-center">
-                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 mb-4">
-                    <i class="fas fa-trash-alt text-xl"></i>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Excluir candidatura?</h3>
-                <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. A vaga será removida do seu histórico permanentemente.</p>
-                
-                <div class="flex gap-3 w-full">
-                    <button onclick="fecharModalExclusao()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
-                        Cancelar
-                    </button>
-                    <button id="btn-confirmar-exclusao" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
-                        Sim, excluir
-                    </button>
+                <div class="border border-slate-200/70 rounded-2xl p-5 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Recorrência de Cargos</h3>
+                    <div class="h-64 relative">
+                        <canvas id="graficoCargos"></canvas>
+                    </div>
+                    <div id="legenda-graficoCargos" class="hidden mt-4 pt-3 border-t border-slate-200/60"></div>
                 </div>
             </div>
-        </div>
+        </section>
+
     </div>
 
     <script>
-        /* Variáveis globais de estado */
-        let candidaturas = [];
-        let tipoGraficoAtual = 'bar'; 
-        let idVagaParaExcluir = null;
-        
-        /* Instâncias dos gráficos */
-        let instChartCargos = null;
-        let instChartEmpresas = null;
-        let instChartStatus = null;
+        Chart.register(ChartDataLabels);
 
-        /* Inicialização ao carregar a página */
+        let candidaturas = [];
+        let tipoGrafico = 'bar'; 
+        let chartEmpresas = null;
+        let chartCargos = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Define a data de hoje como padrão no formulário
-            document.getElementById('data-candidatura').valueAsDate = new Date();
-            
-            // Carrega os dados do localStorage
             carregarDados();
+            document.getElementById('form-vaga').addEventListener('submit', salvarVaga);
+            
+            document.getElementById('btn-barras').addEventListener('click', () => mudarTipoGrafico('bar'));
+            document.getElementById('btn-pizza').addEventListener('click', () => mudarTipoGrafico('pie'));
         });
 
-        /* Manipulação do localStorage */
         function carregarDados() {
-            const dadosSalvos = localStorage.getItem('jobTrackerData');
+            const dadosSalvos = localStorage.getItem('jobtracker_candidaturas');
             if (dadosSalvos) {
                 candidaturas = JSON.parse(dadosSalvos);
             }
             atualizarInterface();
         }
 
-        function salvarDados() {
-            localStorage.setItem('jobTrackerData', JSON.stringify(candidaturas));
-            atualizarInterface();
-        }
-
-        /* Evento de cadastro de nova vaga */
-        document.getElementById('formulario-vaga').addEventListener('submit', (e) => {
+        function salvarVaga(e) {
             e.preventDefault();
 
-            const novaCandidatura = {
-                id: Date.now().toString(), // Gera um ID único simples
+            let novoId = 1;
+            if (candidaturas.length > 0) {
+                novoId = Math.max(...candidaturas.map(v => parseInt(v.id) || 0)) + 1;
+            }
+
+            const novaVaga = {
+                id: novoId.toString(),
                 cargo: document.getElementById('cargo').value.trim(),
                 empresa: document.getElementById('empresa').value.trim(),
-                dataCandidatura: document.getElementById('data-candidatura').value,
-                ultimaAtualizacao: document.getElementById('data-candidatura').value,
+                data: document.getElementById('data').value,
                 status: document.getElementById('status').value
             };
 
-            candidaturas.push(novaCandidatura);
-            salvarDados();
+            candidaturas.push(novaVaga);
+            sincronizarLocal();
+            document.getElementById('form-vaga').reset();
+            atualizarInterface();
+        }
+
+        function excluirVaga(id) {
+            candidaturas = candidaturas.filter(vaga => vaga.id !== id);
             
-            // Limpa o formulário e redefine a data
-            e.target.reset();
-            document.getElementById('data-candidatura').valueAsDate = new Date();
-        });
+            candidaturas.forEach((vaga, index) => {
+                vaga.id = (index + 1).toString();
+            });
 
-        /* Ações nas vagas */
-        function mudarStatus(id, novoStatus) {
-            const index = candidaturas.findIndex(v => v.id === id);
-            if (index !== -1) {
-                candidaturas[index].status = novoStatus;
-                candidaturas[index].ultimaAtualizacao = new Date().toISOString().split('T')[0];
-                salvarDados();
+            sincronizarLocal();
+            atualizarInterface();
+        }
+
+        function sincronizarLocal() {
+            localStorage.setItem('jobtracker_candidaturas', JSON.stringify(candidaturas));
+        }
+
+        function exportarCSV() {
+            if (candidaturas.length === 0) {
+                alert("Não há dados cadastrados para exportar.");
+                return;
+            }
+
+            let csv = "id;cargo;empresa;data;status\n";
+            candidaturas.forEach(vaga => {
+                const cargoLimpo = vaga.cargo.includes(';') ? `"${vaga.cargo}"` : vaga.cargo;
+                const empresaLimpa = vaga.empresa.includes(';') ? `"${vaga.empresa}"` : vaga.empresa;
+                
+                csv += `${vaga.id};${cargoLimpo};${empresaLimpa};${vaga.data};${vaga.status}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `jobtracker_backup_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function parseCSVLine(linha, separador) {
+            let colunas = [];
+            let valorAtual = '';
+            let entreAspas = false;
+            
+            for (let i = 0; i < linha.length; i++) {
+                let char = linha[i];
+                if (char === '"') {
+                    entreAspas = !entreAspas;
+                } else if (char === separador && !entreAspas) {
+                    colunas.push(valorAtual);
+                    valorAtual = '';
+                } else {
+                    valorAtual += char;
+                }
+            }
+            colunas.push(valorAtual);
+            return colunas.map(c => c.trim());
+        }
+
+        function processarStringCSV(conteudo) {
+            const linhas = conteudo.split(/\r?\n/);
+            let novasCandidaturas = [];
+            let maiorIdEncontrado = 0;
+
+            for (let i = 1; i < linhas.length; i++) {
+                const linha = linhas[i].trim();
+                if (linha === "") continue;
+
+                const separador = linha.includes(';') ? ';' : ',';
+                const colunas = parseCSVLine(linha, separador);
+
+                if (colunas.length >= 5) {
+                    let idSequencial = parseInt(colunas[0]) || (maiorIdEncontrado + 1);
+                    if (idSequencial > maiorIdEncontrado) maiorIdEncontrado = idSequencial;
+
+                    let dataFormatada = colunas[3];
+                    if (dataFormatada.includes('/')) {
+                        const partes = dataFormatada.split('/');
+                        if (partes.length === 3) {
+                            let ano = partes[2];
+                            if (ano.length === 2) ano = '20' + ano;
+                            const mes = partes[1].padStart(2, '0');
+                            const dia = partes[0].padStart(2, '0');
+                            dataFormatada = `${ano}-${mes}-${dia}`;
+                        }
+                    }
+
+                    novasCandidaturas.push({
+                        id: idSequencial.toString(),
+                        cargo: colunas[1],
+                        empresa: colunas[2],
+                        data: dataFormatada,
+                        status: colunas[4]
+                    });
+                }
+            }
+
+            if (novasCandidaturas.length > 0) {
+                candidaturas = novasCandidaturas;
+                sincronizarLocal();
+                atualizarInterface();
+            } else {
+                alert("Arquivo vazio ou colunas incompatíveis.");
             }
         }
 
-        function abrirModalExclusao(id) {
-            idVagaParaExcluir = id;
-            document.getElementById('modal-exclusao').classList.remove('hidden');
-        }
+        function importarCSV(event) {
+            const arquivo = event.target.files[0];
+            if (!arquivo) return;
 
-        function fecharModalExclusao() {
-            idVagaParaExcluir = null;
-            document.getElementById('modal-exclusao').classList.add('hidden');
-        }
-
-        document.getElementById('btn-confirmar-exclusao').addEventListener('click', () => {
-            if (idVagaParaExcluir) {
-                candidaturas = candidaturas.filter(v => v.id !== idVagaParaExcluir);
-                salvarDados();
-                fecharModalExclusao();
-            }
-        });
-
-        /* Funções utilitárias */
-        function formatarData(dataStr) {
-            if(!dataStr) return '-';
-            const partes = dataStr.split('-');
-            // Verifica se está no formato AAAA-MM-DD
-            if (partes.length === 3) {
-                const [ano, mes, dia] = partes;
-                return `${dia}/${mes}/${ano}`;
-            }
-            return dataStr;
-        }
-
-        function badgeStatus(status) {
-            const cores = {
-                'Aguardando chamada': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                'Em entrevista': 'bg-blue-100 text-blue-800 border-blue-200',
-                'Aprovado': 'bg-green-100 text-green-800 border-green-200',
-                'Rejeitado': 'bg-red-100 text-red-800 border-red-200'
+            const leitor = new FileReader();
+            leitor.onload = function(e) {
+                processarStringCSV(e.target.result);
+                event.target.value = ''; 
             };
-            const cor = cores[status] || 'bg-gray-100 text-gray-800';
-            return `<span class="px-2.5 py-1 rounded-full text-xs font-medium border ${cor}">${status}</span>`;
+            leitor.readAsText(arquivo);
         }
 
-        /* Central de atualizações visuais */
         function atualizarInterface() {
             renderizarTabela();
             verificarNotificacoes();
-            renderizarGraficos();
+            atualizarDashboard();
         }
 
         function renderizarTabela() {
-            const corpo = document.getElementById('corpo-tabela-vagas');
-            const estadoVazio = document.getElementById('estado-vazio');
-            corpo.innerHTML = '';
+            const tbody = document.getElementById('tabela-corpo');
+            tbody.innerHTML = '';
 
             if (candidaturas.length === 0) {
-                estadoVazio.classList.remove('hidden');
-                estadoVazio.classList.add('flex');
-            } else {
-                estadoVazio.classList.add('hidden');
-                estadoVazio.classList.remove('flex');
-                
-                // Ordena da mais recentemente atualizada para a mais antiga
-                const listaOrdenada = [...candidaturas].sort((a, b) => new Date(b.ultimaAtualizacao) - new Date(a.ultimaAtualizacao));
-                const hoje = new Date();
-
-                listaOrdenada.forEach(vaga => {
-                    const dataAtualizacao = new Date(vaga.ultimaAtualizacao);
-                    dataAtualizacao.setMinutes(dataAtualizacao.getMinutes() + dataAtualizacao.getTimezoneOffset());
-                    
-                    const diffTempo = Math.abs(hoje - dataAtualizacao);
-                    const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
-                    
-                    const estagnada = diffDias >= 7 && vaga.status !== 'Aprovado' && vaga.status !== 'Rejeitado';
-
-                    const tr = document.createElement('tr');
-                    tr.className = `hover:bg-gray-50 transition-colors ${estagnada ? 'bg-amber-50/30' : ''}`;
-                    tr.innerHTML = `
-                        <td class="p-3 font-medium text-gray-800">
-                            ${vaga.cargo} 
-                            ${estagnada ? `<i class="fas fa-clock text-amber-500 text-xs ml-1" title="Sem atualização há ${diffDias} dias"></i>` : ''}
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic font-medium">
+                            Nenhuma candidatura registrada ainda. Comece preenchendo o formulário ao lado.
                         </td>
-                        <td class="p-3 text-gray-600">${vaga.empresa}</td>
-                        <td class="p-3 text-gray-600">${formatarData(vaga.dataCandidatura)}</td>
-                        <td class="p-3 text-xs text-gray-500">
-                            ${formatarData(vaga.ultimaAtualizacao)} <br> <span class="opacity-70">(${diffDias} dias atrás)</span>
-                        </td>
-                        <td class="p-3">${badgeStatus(vaga.status)}</td>
-                        <td class="p-3 text-center flex items-center justify-center gap-2">
-                            <select onchange="mudarStatus('${vaga.id}', this.value)" 
-                                class="text-xs border-gray-300 rounded focus:ring-indigo-500 py-1 pl-2 pr-6 bg-white border outline-none text-gray-600">
-                                <option value="" disabled selected>Mudar status</option>
-                                <option value="Aguardando chamada">Aguardando</option>
-                                <option value="Em entrevista">Entrevista</option>
-                                <option value="Aprovado">Aprovado</option>
-                                <option value="Rejeitado">Rejeitado</option>
-                            </select>
-                            <button onclick="abrirModalExclusao('${vaga.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors" title="Excluir vaga">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    corpo.appendChild(tr);
-                });
+                    </tr>
+                `;
+                return;
             }
+
+            const candidaturasOrdenadas = [...candidaturas].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+            candidaturasOrdenadas.forEach(vaga => {
+                const partesData = vaga.data.split('-');
+                let dataExibicao = vaga.data;
+                if(partesData.length === 3) {
+                    dataExibicao = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+                }
+
+                let statusBadge = "bg-slate-100 text-slate-700 border-slate-200/60";
+                if(vaga.status === 'aprovado') statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+                if(vaga.status === 'rejeitado') statusBadge = "bg-rose-50 text-rose-700 border-rose-200/60";
+                if(vaga.status === 'em entrevista') statusBadge = "bg-blue-50 text-blue-700 border-blue-200/60";
+                if(vaga.status === 'aguardando chamada') statusBadge = "bg-amber-50 text-amber-700 border-amber-200/60";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-slate-400 text-xs">${vaga.id}</td>
+                    <td class="px-4 py-3 font-semibold text-slate-800">${vaga.cargo}</td>
+                    <td class="px-4 py-3 text-slate-600">${vaga.empresa}</td>
+                    <td class="px-4 py-3 text-slate-500 text-xs font-medium">${dataExibicao}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusBadge}">
+                            ${vaga.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="excluirVaga('${vaga.id}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg text-xs font-semibold transition">
+                            Excluir
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function verificarNotificacoes() {
-            const hoje = new Date();
+            const barra = document.getElementById('notificacao-barra');
+            const umTempoAtras = new Date();
+            umTempoAtras.setDate(umTempoAtras.getDate() - 7); 
+
             const vagasEstagnadas = candidaturas.filter(vaga => {
-                if (vaga.status === 'Aprovado' || vaga.status === 'Rejeitado') return false;
-                
-                const dataAtualizacao = new Date(vaga.ultimaAtualizacao);
-                // Compensar o fuso horário para cálculo correto dos dias
-                dataAtualizacao.setMinutes(dataAtualizacao.getMinutes() + dataAtualizacao.getTimezoneOffset());
-                
-                const diffDias = Math.floor(Math.abs(hoje - dataAtualizacao) / (1000 * 60 * 60 * 24));
-                return diffDias >= 7;
+                const dataVaga = new Date(vaga.data);
+                return dataVaga < umTempoAtras && vaga.status === 'aguardando chamada';
             });
 
-            const barra = document.getElementById('barra-notificacao');
             if (vagasEstagnadas.length > 0) {
-                document.getElementById('texto-notificacao').textContent = `Você tem ${vagasEstagnadas.length} vaga(s) aguardando respostas há uma semana ou mais. Avalie fazer um follow-up.`;
+                barra.innerHTML = `
+                    <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span>Você tem <strong>${vagasEstagnadas.length}</strong> vaga(s) aguardando retorno há mais de 1 semana.</span>
+                `;
                 barra.classList.remove('hidden');
             } else {
                 barra.classList.add('hidden');
             }
         }
 
-        /* Lógica dos gráficos */
-        function alterarTipoGrafico(tipo) {
-            tipoGraficoAtual = tipo;
-            
-            const btnBar = document.getElementById('btn-grafico-bar');
-            const btnPie = document.getElementById('btn-grafico-pie');
+        function mudarTipoGrafico(tipo) {
+            tipoGrafico = tipo;
+            const btnBarras = document.getElementById('btn-barras');
+            const btnPizza = document.getElementById('btn-pizza');
             
             if (tipo === 'bar') {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all";
-                btnPie.className = "px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all";
+                btnBarras.className = 'bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition';
+                btnPizza.className = 'text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition bg-transparent shadow-none';
             } else {
-                btnPie.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all";
+                btnPizza.className = 'bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition';
+                btnBarras.className = 'text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition bg-transparent shadow-none';
             }
-            
-            renderizarGraficos();
+            atualizarDashboard();
         }
 
-        function criarGrafico(instanciaAntiga, idCanvas, tipo, titulo, labels, dados, cores) {
-            if (instanciaAntiga) {
-                instanciaAntiga.destroy(); // Necessário destruir antes de recriar no Chart.js
+        function gerarCoresUnicas(total) {
+            const cores = [];
+            for (let i = 0; i < total; i++) {
+                const hue = Math.round((i * 137.508) % 360); 
+                cores.push(`hsl(${hue}, 75%, 52%)`);
             }
-            
-            const ctx = document.getElementById(idCanvas).getContext('2d');
-            
-            const opcoes = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { 
-                        display: tipo === 'pie', 
-                        position: 'bottom',
-                        labels: { font: { family: "'Inter', sans-serif", size: 11 } }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                        titleFont: { family: "'Inter', sans-serif" },
-                        bodyFont: { family: "'Inter', sans-serif" },
-                        padding: 10,
-                        cornerRadius: 8
-                    }
-                }
+            return cores;
+        }
+
+        function prepararDadosParaGrafico(contagemObj) {
+            const entradas = Object.entries(contagemObj).sort((a, b) => b[1] - a[1]);
+            return {
+                labels: entradas.map(e => e[0]),
+                data: entradas.map(e => e[1])
             };
+        }
 
-            if (tipo === 'bar') {
-                opcoes.scales = {
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { stepSize: 1, font: { family: "'Inter', sans-serif" } },
-                        grid: { borderDash: [4, 4] }
-                    },
-                    x: { ticks: { font: { family: "'Inter', sans-serif" } } }
-                };
+        function atualizarDashboard() {
+            document.getElementById('metric-total').textContent = candidaturas.length;
+            
+            const empresasUnicas = new Set(candidaturas.map(v => v.empresa.toLowerCase()));
+            document.getElementById('metric-empresas').textContent = empresasUnicas.size;
+
+            const cargosUnicos = new Set(candidaturas.map(v => v.cargo.toLowerCase()));
+            document.getElementById('metric-cargos').textContent = cargosUnicos.size;
+
+            const contagemEmpresas = {};
+            const contagemCargos = {};
+
+            candidaturas.forEach(v => {
+                contagemEmpresas[v.empresa] = (contagemEmpresas[v.empresa] || 0) + 1;
+                contagemCargos[v.cargo] = (contagemCargos[v.cargo] || 0) + 1;
+            });
+
+            const dadosEmpresas = prepararDadosParaGrafico(contagemEmpresas);
+            const dadosCargos = prepararDadosParaGrafico(contagemCargos);
+
+            renderizarGrafico('graficoEmpresas', 'legenda-graficoEmpresas', 'Ofertas por Empresa', dadosEmpresas.labels, dadosEmpresas.data, chartEmpresas, chart => chartEmpresas = chart);
+            renderizarGrafico('graficoCargos', 'legenda-graficoCargos', 'Recorrência de Cargos', dadosCargos.labels, dadosCargos.data, chartCargos, chart => chartCargos = chart);
+        }
+
+        function renderizarLegendaScrollavel(idLegenda, labels, data, cores, totalSum) {
+            const container = document.getElementById(idLegenda);
+            if (!container) return;
+
+            if (tipoGrafico !== 'pie' || labels.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
             }
 
-            return new Chart(ctx, {
-                type: tipo,
+            container.classList.remove('hidden');
+            let html = '<div class="flex flex-wrap gap-2 text-xs text-slate-700 max-h-28 overflow-y-auto custom-scrollbar pr-1">';
+            labels.forEach((label, i) => {
+                const val = data[i];
+                const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
+                html += `
+                    <div class="flex items-center gap-2 bg-white border border-slate-200/80 px-2.5 py-1 rounded-xl shadow-xs hover:border-slate-300 transition">
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${cores[i]}"></span>
+                        <span class="font-medium text-slate-700 truncate max-w-[130px]" title="${label}">${label}:</span>
+                        <span class="text-slate-500 font-bold">${val} (${pct}%)</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderizarGrafico(idCanvas, idLegenda, rotulo, labels, data, instanciaAnterior, setInstancia) {
+            const ctx = document.getElementById(idCanvas).getContext('2d');
+            if (instanciaAnterior) instanciaAnterior.destroy();
+
+            const totalSum = data.reduce((a, b) => a + b, 0);
+            const coresDinamicas = gerarCoresUnicas(labels.length);
+
+            renderizarLegendaScrollavel(idLegenda, labels, data, coresDinamicas, totalSum);
+
+            const novaInstancia = new Chart(ctx, {
+                type: tipoGrafico,
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: titulo,
-                        data: dados,
-                        backgroundColor: cores.bg,
-                        borderColor: cores.border,
-                        borderWidth: 1,
-                        borderRadius: tipo === 'bar' ? 4 : 0
+                        label: rotulo,
+                        data: data,
+                        backgroundColor: coresDinamicas,
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        borderRadius: tipoGrafico === 'bar' ? 6 : 0
                     }]
                 },
-                options: opcoes
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: function(context) {
+                                if (tipoGrafico !== 'pie' || totalSum === 0) return false;
+                                const val = context.dataset.data[context.dataIndex];
+                                const pct = (val / totalSum) * 100;
+                                return pct >= 2.5;
+                            },
+                            color: '#ffffff',
+                            font: { weight: 'bold', size: 11 },
+                            formatter: function(value) {
+                                if (totalSum === 0) return '0%';
+                                const pct = ((value / totalSum) * 100).toFixed(1);
+                                return `${pct}%`;
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw || 0;
+                                    const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${val} (${pct}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: tipoGrafico === 'bar' ? {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(226, 232, 240, 0.6)' } },
+                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                    } : {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
             });
-        }
-
-        function renderizarGraficos() {
-            // Contagem dos dados
-            const mapaCargos = {};
-            const mapaEmpresas = {};
-            const mapaStatus = { 'Aguardando chamada': 0, 'Em entrevista': 0, 'Aprovado': 0, 'Rejeitado': 0 };
-
-            candidaturas.forEach(v => {
-                mapaCargos[v.cargo] = (mapaCargos[v.cargo] || 0) + 1;
-                mapaEmpresas[v.empresa] = (mapaEmpresas[v.empresa] || 0) + 1;
-                if(mapaStatus[v.status] !== undefined) mapaStatus[v.status]++;
-            });
-
-            // Extrair chaves/valores e pegar os top 5 para evitar poluição visual
-            const arrCargos = Object.entries(mapaCargos).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const arrEmpresas = Object.entries(mapaEmpresas).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            
-            // Definição de paletas modernas e suaves
-            const coresCargos = { 
-                bg: ['rgba(99, 102, 241, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(217, 70, 239, 0.7)', 'rgba(236, 72, 153, 0.7)'], 
-                border: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'] 
-            };
-            const coresEmpresas = { 
-                bg: ['rgba(14, 165, 233, 0.7)', 'rgba(6, 182, 212, 0.7)', 'rgba(20, 184, 166, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(34, 197, 94, 0.7)'], 
-                border: ['#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e'] 
-            };
-            const coresStatus = { 
-                bg: ['rgba(250, 204, 21, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'], 
-                border: ['#facc15', '#3b82f6', '#22c55e', '#ef4444'] 
-            };
-
-            // Renderiza as instâncias chamando a função utilitária
-            instChartCargos = criarGrafico(instChartCargos, 'chartCargos', tipoGraficoAtual, 'Quantidade', arrCargos.map(i => i[0]), arrCargos.map(i => i[1]), coresCargos);
-            instChartEmpresas = criarGrafico(instChartEmpresas, 'chartEmpresas', tipoGraficoAtual, 'Quantidade', arrEmpresas.map(i => i[0]), arrEmpresas.map(i => i[1]), coresEmpresas);
-            instChartStatus = criarGrafico(instChartStatus, 'chartStatus', tipoGraficoAtual, 'Frequência', Object.keys(mapaStatus), Object.values(mapaStatus), coresStatus);
+            setInstancia(novaInstancia);
         }
     </script>
 </body>
