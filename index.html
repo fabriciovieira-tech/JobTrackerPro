@@ -53,14 +53,21 @@
         <!-- Seção Superior: Formulário e Histórico -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Card de Cadastro -->
+            <!-- Card de Cadastro Expansível -->
             <section class="lg:col-span-1 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition-all duration-300 h-fit">
-                <div class="flex items-center gap-2 mb-5 border-b border-slate-100 pb-3">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Nova Candidatura</h2>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Nova Candidatura</h2>
+                    </div>
+                    <!-- Botão Toggle + -->
+                    <button type="button" onclick="toggleFormulario()" id="btn-toggle-form" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center justify-center font-bold text-lg shadow-xs active:scale-95" title="Expandir/Minimizar Formulário">
+                        <span id="icone-toggle">+</span>
+                    </button>
                 </div>
                 
-                <form id="form-vaga" class="space-y-4">
+                <!-- Formulário (Minimizado por padrão) -->
+                <form id="form-vaga" class="space-y-4 hidden transition-all duration-300">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Cargo Desejado</label>
                         <input type="text" id="cargo" required class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm" placeholder="ex: Engenheiro de Software">
@@ -68,6 +75,15 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Empresa</label>
                         <input type="text" id="empresa" required class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm" placeholder="ex: Tech Corp">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Onde ocorreu a inscrição?</label>
+                        <select id="plataforma" onchange="verificarPlataformaOutro(this.value)" class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm">
+                            <!-- Opções geradas dinamicamente via JS -->
+                        </select>
+                        <div id="container-plataforma-outro" class="hidden mt-2">
+                            <input type="text" id="plataforma-outro-input" placeholder="Digite o nome da plataforma..." class="w-full rounded-xl border-slate-200 shadow-xs border p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-sm bg-white">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Data da Candidatura</label>
@@ -116,6 +132,7 @@
                                 <th class="px-4 py-3.5">ID</th>
                                 <th class="px-4 py-3.5">Cargo</th>
                                 <th class="px-4 py-3.5">Empresa</th>
+                                <th class="px-4 py-3.5">Plataforma</th>
                                 <th class="px-4 py-3.5">Data</th>
                                 <th class="px-4 py-3.5">Status</th>
                                 <th class="px-4 py-3.5 text-right">Ações</th>
@@ -136,7 +153,6 @@
                     <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Dashboard de Métricas de Mercado</h2>
                 </div>
                 
-                <!-- Toggle de tipo de gráfico em segmented control -->
                 <div class="flex gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
                     <button id="btn-barras" class="bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition">Barras</button>
                     <button id="btn-pizza" class="text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition">Pizza</button>
@@ -189,7 +205,11 @@
         let chartEmpresas = null;
         let chartCargos = null;
 
+        const plataformasPadrao = ['LinkedIn', 'Gupy', 'CenterRH', 'Sólides', 'Infojobs'];
+        let plataformasCustom = [];
+
         document.addEventListener('DOMContentLoaded', () => {
+            carregarPlataformas();
             carregarDados();
             document.getElementById('form-vaga').addEventListener('submit', salvarVaga);
             
@@ -197,6 +217,50 @@
             document.getElementById('btn-pizza').addEventListener('click', () => mudarTipoGrafico('pie'));
         });
 
+        // === Controle do Formulário Expansível ===
+        function toggleFormulario() {
+            const form = document.getElementById('form-vaga');
+            const icone = document.getElementById('icone-toggle');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                icone.textContent = '−';
+            } else {
+                form.classList.add('hidden');
+                icone.textContent = '+';
+            }
+        }
+
+        // === Gestão de Plataformas Selecionáveis ===
+        function carregarPlataformas() {
+            const salvas = localStorage.getItem('jobtracker_plataformas');
+            if (salvas) {
+                plataformasCustom = JSON.parse(salvas);
+            }
+            renderizarOpcoesPlataforma();
+        }
+
+        function renderizarOpcoesPlataforma() {
+            const select = document.getElementById('plataforma');
+            if (!select) return;
+
+            const todasPlataformas = [...plataformasPadrao, ...plataformasCustom];
+            let html = todasPlataformas.map(p => `<option value="${p}">${p}</option>`).join('');
+            html += `<option value="Outro">+ Outro...</option>`;
+            select.innerHTML = html;
+        }
+
+        function verificarPlataformaOutro(valor) {
+            const containerOutro = document.getElementById('container-plataforma-outro');
+            if (valor === 'Outro') {
+                containerOutro.classList.remove('hidden');
+                document.getElementById('plataforma-outro-input').focus();
+            } else {
+                containerOutro.classList.add('hidden');
+            }
+        }
+
+        // === Manipulação de Dados ===
         function carregarDados() {
             const dadosSalvos = localStorage.getItem('jobtracker_candidaturas');
             if (dadosSalvos) {
@@ -213,10 +277,26 @@
                 novoId = Math.max(...candidaturas.map(v => parseInt(v.id) || 0)) + 1;
             }
 
+            let plataformaSelecionada = document.getElementById('plataforma').value;
+            if (plataformaSelecionada === 'Outro') {
+                const outroValor = document.getElementById('plataforma-outro-input').value.trim();
+                if (outroValor) {
+                    plataformaSelecionada = outroValor;
+                    if (!plataformasPadrao.includes(outroValor) && !plataformasCustom.includes(outroValor)) {
+                        plataformasCustom.push(outroValor);
+                        localStorage.setItem('jobtracker_plataformas', JSON.stringify(plataformasCustom));
+                        renderizarOpcoesPlataforma();
+                    }
+                } else {
+                    plataformaSelecionada = 'Outro';
+                }
+            }
+
             const novaVaga = {
                 id: novoId.toString(),
                 cargo: document.getElementById('cargo').value.trim(),
                 empresa: document.getElementById('empresa').value.trim(),
+                plataforma: plataformaSelecionada,
                 data: document.getElementById('data').value,
                 status: document.getElementById('status').value
             };
@@ -224,6 +304,11 @@
             candidaturas.push(novaVaga);
             sincronizarLocal();
             document.getElementById('form-vaga').reset();
+            document.getElementById('container-plataforma-outro').classList.add('hidden');
+            document.getElementById('plataforma').value = plataformasPadrao[0];
+            
+            // Re-minimiza o formulário após salvar
+            toggleFormulario();
             atualizarInterface();
         }
 
@@ -257,12 +342,13 @@
                 return;
             }
 
-            let csv = "id;cargo;empresa;data;status\n";
+            let csv = "id;cargo;empresa;plataforma;data;status\n";
             candidaturas.forEach(vaga => {
                 const cargoLimpo = vaga.cargo.includes(';') ? `"${vaga.cargo}"` : vaga.cargo;
                 const empresaLimpa = vaga.empresa.includes(';') ? `"${vaga.empresa}"` : vaga.empresa;
+                const platLimpa = (vaga.plataforma || 'Não especificada').includes(';') ? `"${vaga.plataforma}"` : (vaga.plataforma || 'Não especificada');
                 
-                csv += `${vaga.id};${cargoLimpo};${empresaLimpa};${vaga.data};${vaga.status}\n`;
+                csv += `${vaga.id};${cargoLimpo};${empresaLimpa};${platLimpa};${vaga.data};${vaga.status}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -311,7 +397,20 @@
                     let idSequencial = parseInt(colunas[0]) || (maiorIdEncontrado + 1);
                     if (idSequencial > maiorIdEncontrado) maiorIdEncontrado = idSequencial;
 
-                    let dataFormatada = colunas[3];
+                    let cargo = colunas[1];
+                    let empresa = colunas[2];
+                    let plataforma = "Não especificada";
+                    let dataRaw = colunas[3];
+                    let status = colunas[4];
+
+                    // Se o CSV possui 6 colunas (formato novo com plataforma)
+                    if (colunas.length >= 6) {
+                        plataforma = colunas[3];
+                        dataRaw = colunas[4];
+                        status = colunas[5];
+                    }
+
+                    let dataFormatada = dataRaw;
                     if (dataFormatada.includes('/')) {
                         const partes = dataFormatada.split('/');
                         if (partes.length === 3) {
@@ -325,10 +424,11 @@
 
                     novasCandidaturas.push({
                         id: idSequencial.toString(),
-                        cargo: colunas[1],
-                        empresa: colunas[2],
+                        cargo: cargo,
+                        empresa: empresa,
+                        plataforma: plataforma,
                         data: dataFormatada,
-                        status: colunas[4]
+                        status: status
                     });
                 }
             }
@@ -367,8 +467,8 @@
             if (candidaturas.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic font-medium">
-                            Nenhuma candidatura registrada ainda. Comece preenchendo o formulário ao lado.
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-400 italic font-medium">
+                            Nenhuma candidatura registrada ainda. Clique no botão "+" ao lado para cadastrar.
                         </td>
                     </tr>
                 `;
@@ -396,6 +496,11 @@
                     <td class="px-4 py-3 font-semibold text-slate-400 text-xs">${vaga.id}</td>
                     <td class="px-4 py-3 font-semibold text-slate-800">${vaga.cargo}</td>
                     <td class="px-4 py-3 text-slate-600">${vaga.empresa}</td>
+                    <td class="px-4 py-3 text-slate-600">
+                        <span class="inline-block px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-medium text-xs">
+                            ${vaga.plataforma || 'Não especificada'}
+                        </span>
+                    </td>
                     <td class="px-4 py-3 text-slate-500 text-xs font-medium">${dataExibicao}</td>
                     <td class="px-4 py-3">
                         <select onchange="alterarStatusVaga('${vaga.id}', this.value)" class="text-xs rounded-xl px-2.5 py-1 border transition outline-none cursor-pointer ${statusBadge}">
