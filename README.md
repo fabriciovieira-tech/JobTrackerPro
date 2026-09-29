@@ -1,87 +1,62 @@
-# ğŸ’¼ JobTracker Pro â€” Gestor de candidaturas e mÃ©tricas de mercado
+# JobTracker Pro - Gestão de Candidaturas
 
-O **JobTracker Pro** Ã© uma aplicaÃ§Ã£o web intuitiva e centralizada, desenvolvida para simplificar a organizaÃ§Ã£o da sua busca por emprego. Com ele, vocÃª registra suas candidaturas, acompanha o andamento de cada processo seletivo em tempo real e recebe alertas automÃ¡ticos sobre vagas que precisam de acompanhamento.
-
-Esta versÃ£o conta com armazenamento local seguro (`localStorage`), garantindo funcionamento **100% offline**, resposta imediata e zero necessidade de configuraÃ§Ãµes externas ou chaves de API.
+O **JobTracker Pro** é uma aplicação web *single-page* desenvolvida para organizar, acompanhar e analisar candidaturas a vagas de emprego. Projetado com uma arquitetura *offline-first*, o sistema opera diretamente no navegador utilizando `localStorage`, oferecendo persistência local rápida, dashboards interativos e suporte robusto para importação e exportação de dados em CSV.
 
 ---
 
-## âœ¨ Funcionalidades principais
+##  Funcionalidades Principais
 
-- ğŸ“ **Cadastro rÃ¡pido de candidaturas:** Informe o cargo, a empresa, a data da candidatura e o status inicial em poucos cliques.
-- ğŸ“Š **Tabela de acompanhamento ativo:** Visualize todas as suas vagas registradas com ordenaÃ§Ã£o automÃ¡tica pela Ãºltima atualizaÃ§Ã£o.
-- ğŸ”„ **GestÃ£o completa de status:** Altere o status da vaga (*Aguardando chamada, Em entrevista, Aprovado, Rejeitado*) diretamente na tabela.
-- ğŸ—‘ï¸ **ExclusÃ£o isolada de registros:** Remova candidaturas indesejadas com seguranÃ§a por meio de um modal de confirmaÃ§Ã£o, garantindo que o restante do seu histÃ³rico nÃ£o seja afetado.
-- â° **Alertas de estagnaÃ§Ã£o (follow-up):** NotificaÃ§Ã£o automÃ¡tica na parte superior da tela e identificadores visuais para vagas que estÃ£o hÃ¡ mais de **7 dias sem atualizaÃ§Ã£o**.
-- ğŸ“ˆ **Dashboard de mÃ©tricas interativo:** Acompanhe dados como frequÃªncia de cargos, recorrÃªncia por empresas e status geral com suporte Ã  **alternÃ¢ncia de visualizaÃ§Ã£o** entre grÃ¡ficos de barras e grÃ¡ficos de pizza.
-- ğŸ’¾ **PersistÃªncia local (`localStorage`):** Seus dados sÃ£o salvos em tempo real diretamente no seu navegador. VocÃª pode fechar a pÃ¡gina ou reiniciar o computador sem perder suas candidaturas.
+* **Formulário Expansível:** Cartão de cadastro "Nova Candidatura" minimizado por padrão com botão de alternância (`+`/``) para otimizar o espaço em tela.
+* **Seleção de Plataforma de Inscrição:** Campo para indicar onde ocorreu a candidatura com opções predefinidas (*LinkedIn*, *Gupy*, *CenterRH*, *Sólides*, *Infojobs*) e a opção **Outro**, que permite digitar e salvar dinamicamente novas plataformas personalizadas no `localStorage`.
+* **Atualização Dinâmica de Status:** Alteração do status diretamente na tabela por meio de menus suspensos (`select`), sincronizando a cor do indicador visual, o armazenamento local e os gráficos em tempo real.
+* **Índices Sequenciais Automáticos:** Reorganização automática dos IDs (1, 2, 3...) ao excluir qualquer registro, eliminando lacunas de numeração na visualização.
+* **Persistência Offline (`localStorage`):** Armazenamento local seguro das candidaturas e plataformas personalizadas, garantindo funcionamento 100% offline.
+* **Importação e Exportação CSV Robustas:**
+  * Exportação e importação de backups completos.
+  * Compatibilidade retroativa com arquivos de 5 colunas e suporte ao novo formato de 6 colunas (incluindo plataforma).
+  * *Parser* inteligente com detecção automática de delimitadores por vírgula (`,`) ou ponto e vírgula (`;`).
+  * Tratamento de campos com aspas e separadores internos para evitar desalinhamento de colunas.
+  * Conversão automática de formatos de data (`DD/MM/AAAA` para `AAAA-MM-DD`).
+* **Dashboard e Métricas de Mercado:**
+  * Indicadores numéricos de **Total de Candidaturas**, **Empresas Distintas** e **Cargos Distintos**.
+  * Visualização gráfica interativa com alternância entre **Gráfico de Barras** e **Gráfico de Pizza**.
+  * Algoritmo de geração de cores vibrantes únicas (proporção áurea HSL) para evitar repetição de tonalidades.
+  * Rótulos percentuais exibidos diretamente sobre as fatias do gráfico de pizza via `ChartDataLabels`.
+  * Legenda customizada em HTML com barra de rolagem (*scroll*) para exibir todos os itens sem cortar texto ou poluir o gráfico.
+* **Notificações de Estagnação:** Alerta visual automático destacado para candidaturas que permanecem no status "Aguardando chamada" por mais de 7 dias.
+* **Interface Moderna com Tailwind CSS:** Layout responsivo construído com cartões elevados (`rounded-2xl`), efeitos de *backdrop-blur*, gradientes sutis e barras de rolagem personalizadas.
 
 ---
 
-## ğŸš€ Como executar o projeto
+##  Tecnologias Utilizadas
 
-Como o **JobTracker Pro** funciona inteiramente no lado do cliente (client-side), executÃ¡-lo Ã© extremamente simples e nÃ£o exige instalaÃ§Ã£o de dependÃªncias ou servidores.
+* **HTML5:** Estruturação semântica da aplicação.
+* **Tailwind CSS:** Estilização utilitária e design responsivo via CDN.
+* **JavaScript (Vanilla ES6+):** Lógica de manipulação de DOM, estado local, manipulação de CSV e suporte ao `localStorage`.
+* **Chart.js:** Biblioteca de renderização dos gráficos de métricas.
+* **Chart.js DataLabels Plugin:** Exibição de rótulos de porcentagem sobre as fatias e barras dos gráficos.
 
-### PrÃ©-requisitos
-Um navegador web moderno (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari, etc.).
+---
 
-### Passo a passo
+##  Como Executar o Projeto
 
-1. **Baixe ou clone o repositÃ³rio:**
+Como a aplicação é construída em um único arquivo (`index.html`), não é necessária a instalação de dependências, Node.js ou servidores de compilação.
+
+1. Clone este repositório:
    ```bash
-   git clone https://github.com/seu-usuario/jobtracker-pro.git
+   git clone [https://github.com/fabriciovieira-tech/JobTrackerPro.git](https://github.com/fabriciovieira-tech/JobTrackerPro.git)
    ```
-2. **Navegue atÃ© a pasta do projeto:**
-   ```bash
-   cd jobtracker-pro
-   ```
-3. **Abra o arquivo no navegador:**
-   - DÃª um duplo clique no arquivo `index.html`; **ou**
-   - Arraste o arquivo `index.html` e solte dentro do seu navegador aberto.
+2. Abra o arquivo `index.html` diretamente em qualquer navegador moderno.
 
 ---
 
-## ğŸ“– Como usar
+##  Estrutura do Arquivo CSV
 
-1. **Registrar uma vaga:**
-   - Preencha o formulÃ¡rio na lateral esquerda com o **Cargo**, a **Empresa**, a **Data da candidatura** e o **Status inicial**.
-   - Clique em **Registrar vaga**. A candidatura aparecerÃ¡ imediatamente na tabela ao lado e serÃ¡ salva no navegador.
+Ao importar ou exportar dados, a aplicação gera e aceita arquivos no seguinte formato padronizado:
 
-2. **Atualizar ou excluir o andamento:**
-   - Na tabela de candidaturas, navegue atÃ© a coluna **AÃ§Ãµes**.
-   - Para mudar o andamento, selecione o novo status no menu suspenso.
-   - Para deletar uma vaga, clique no botÃ£o de **Lixeira vermelha** e confirme a exclusÃ£o no aviso que aparecerÃ¡ na tela.
-
-3. **Acompanhar alertas:**
-   - Caso uma vaga fique sem alteraÃ§Ã£o por 7 dias ou mais, uma barra amarela surgirÃ¡ no topo da pÃ¡gina sugerindo um *follow-up*, e um Ã­cone de relÃ³gio serÃ¡ exibido ao lado do cargo.
-
-4. **Analisar as mÃ©tricas:**
-   - Role a pÃ¡gina atÃ© a seÃ§Ã£o inferior **Dashboard de mÃ©tricas** para conferir seus dados.
-   - Use os botÃµes **Barras** ou **Pizza** no canto superior direito do painel para alterar o formato dos grÃ¡ficos dinamicamente.
-
----
-
-## ğŸ“‚ Estrutura do projeto
-
-```text
-â”œâ”€â”€ index.html        # AplicaÃ§Ã£o completa (HTML, Tailwind CSS, Chart.js e LÃ³gica com localStorage)
-â””â”€â”€ README.md         # DocumentaÃ§Ã£o e guia de uso do projeto
+```csv
+id;cargo;empresa;plataforma;data;status
+1;Engenheiro de Software;Tech Corp;LinkedIn;2026-08-01;aprovado
+2;Analista de Dados;Data Analytics;Gupy;2026-08-02;em entrevista
+3;Desenvolvedor Frontend;WebSolutions;CenterRH;2026-08-03;aguardando chamada
 ```
-
----
-
-## ğŸ¤ ContribuiÃ§Ãµes
-
-ContribuiÃ§Ãµes sÃ£o sempre bem-vindas! Se vocÃª tem sugestÃµes de melhorias, novas funcionalidades ou correÃ§Ãµes de bugs:
-
-1. FaÃ§a um **Fork** do projeto.
-2. Crie uma **Branch** para sua funcionalidade (`git checkout -b feature/nova-funcionalidade`).
-3. FaÃ§a o **Commit** de suas alteraÃ§Ãµes (`git commit -m 'Adiciona nova funcionalidade'`).
-4. Envie para a Branch (`git push origin feature/nova-funcionalidade`).
-5. Abra um **Pull Request**.
-
----
-
-## ğŸ“„ LicenÃ§a
-
-Este projeto estÃ¡ sob a licenÃ§a [MIT](https://opensource.org/licenses/MIT) â€” sinta-se livre para usÃ¡-lo, modificÃ¡-lo e compartilhÃ¡-lo.
