@@ -5,68 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JobTracker Pro - Gestão de Candidaturas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Plugin de DataLabels para Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        /* Personalização fina para barras de rolagem internas */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(241, 245, 249, 0.8);
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(241, 245, 249, 0.8); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        th.sortable:hover { background-color: rgba(226, 232, 240, 0.5); cursor: pointer; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/40 text-slate-800 font-sans p-4 sm:p-6 lg:p-8 min-h-screen selection:bg-blue-500 selection:text-white antialiased">
 
     <div class="max-w-7xl mx-auto space-y-8">
         
-        <!-- Cabeçalho Principal -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 gap-4">
             <div class="space-y-1">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 bg-blue-600 rounded-xl text-white shadow-md shadow-blue-500/20">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     </div>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
-                        JobTracker Pro
-                    </h1>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent tracking-tight">JobTracker Pro</h1>
                 </div>
                 <p class="text-slate-500 text-xs sm:text-sm font-medium">Acompanhe suas candidaturas e analise métricas de mercado em tempo real</p>
             </div>
-            
-            <div id="notificacao-barra" class="hidden w-full md:w-auto bg-amber-50 text-amber-800 px-4 py-3 rounded-xl shadow-xs text-xs sm:text-sm border border-amber-200/80 font-medium flex items-center gap-2 animate-pulse">
-            </div>
+            <div id="notificacao-barra" class="hidden w-full md:w-auto bg-amber-50 text-amber-800 px-4 py-3 rounded-xl shadow-xs text-xs sm:text-sm border border-amber-200/80 font-medium flex items-center gap-2 animate-pulse"></div>
         </header>
 
-        <!-- Seção Superior: Formulário e Histórico -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Card de Cadastro Expansível -->
             <section class="lg:col-span-1 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition-all duration-300 h-fit">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Nova Candidatura</h2>
                     </div>
-                    <!-- Botão Toggle + -->
                     <button type="button" onclick="toggleFormulario()" id="btn-toggle-form" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center justify-center font-bold text-lg shadow-xs active:scale-95" title="Expandir/Minimizar Formulário">
                         <span id="icone-toggle">+</span>
                     </button>
                 </div>
                 
-                <!-- Formulário (Minimizado por padrão) -->
                 <form id="form-vaga" class="space-y-4 hidden transition-all duration-300">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Cargo Desejado</label>
@@ -78,9 +55,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Onde ocorreu a inscrição?</label>
-                        <select id="plataforma" onchange="verificarPlataformaOutro(this.value)" class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm">
-                            <!-- Opções geradas dinamicamente via JS -->
-                        </select>
+                        <select id="plataforma" onchange="verificarPlataformaOutro('plataforma', 'container-plataforma-outro', 'plataforma-outro-input')" class="w-full rounded-xl border-slate-200 shadow-xs border p-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition bg-slate-50/50 focus:bg-white text-sm"></select>
                         <div id="container-plataforma-outro" class="hidden mt-2">
                             <input type="text" id="plataforma-outro-input" placeholder="Digite o nome da plataforma..." class="w-full rounded-xl border-slate-200 shadow-xs border p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-sm bg-white">
                         </div>
@@ -99,12 +74,11 @@
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md shadow-blue-500/20 active:scale-[0.99] text-sm mt-2 flex items-center justify-center gap-2">
-                        <span>Registrar Candidatura</span>
+                        Registrar Candidatura
                     </button>
                 </form>
             </section>
 
-            <!-- Card da Tabela de Candidaturas -->
             <section class="lg:col-span-2 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-full hover:shadow-md transition-all duration-300">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4 border-b border-slate-100 pb-3">
                     <div class="flex items-center gap-2">
@@ -127,74 +101,130 @@
 
                 <div class="overflow-x-auto flex-1 max-h-[420px] custom-scrollbar rounded-xl border border-slate-100">
                     <table class="min-w-full divide-y divide-slate-200/60 text-left text-xs sm:text-sm">
-                        <thead class="bg-slate-50/80 sticky top-0 backdrop-blur-md z-10 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                        <thead class="bg-slate-50/80 sticky top-0 backdrop-blur-md z-10 text-slate-500 font-bold uppercase tracking-wider text-[11px] select-none">
                             <tr>
-                                <th class="px-4 py-3.5">ID</th>
-                                <th class="px-4 py-3.5">Cargo</th>
-                                <th class="px-4 py-3.5">Empresa</th>
-                                <th class="px-4 py-3.5">Plataforma</th>
-                                <th class="px-4 py-3.5">Data</th>
-                                <th class="px-4 py-3.5">Status</th>
-                                <th class="px-4 py-3.5 text-right">Ações</th>
+                                <th class="px-4 py-3.5 sortable transition-colors rounded-tl-xl" onclick="ordenarTabela('id')">ID <span id="sort-icon-id" class="text-blue-500">↑</span></th>
+                                <th class="px-4 py-3.5 sortable transition-colors" onclick="ordenarTabela('cargo')">Cargo <span id="sort-icon-cargo" class="text-slate-300"></span></th>
+                                <th class="px-4 py-3.5 sortable transition-colors" onclick="ordenarTabela('empresa')">Empresa <span id="sort-icon-empresa" class="text-slate-300"></span></th>
+                                <th class="px-4 py-3.5 sortable transition-colors" onclick="ordenarTabela('plataforma')">Plataforma <span id="sort-icon-plataforma" class="text-slate-300"></span></th>
+                                <th class="px-4 py-3.5 sortable transition-colors" onclick="ordenarTabela('data')">Data <span id="sort-icon-data" class="text-slate-300"></span></th>
+                                <th class="px-4 py-3.5 sortable transition-colors" onclick="ordenarTabela('status')">Status <span id="sort-icon-status" class="text-slate-300"></span></th>
+                                <th class="px-4 py-3.5 text-right rounded-tr-xl">Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-corpo" class="divide-y divide-slate-100 bg-white">
-                        </tbody>
+                        <tbody id="tabela-corpo" class="divide-y divide-slate-100 bg-white"></tbody>
                     </table>
                 </div>
             </section>
         </div>
 
-        <!-- Seção Inferior: Dashboard de Métricas -->
+        <!-- Seção Inferior: Dashboard de Métricas Analíticas -->
         <section class="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/80 mt-8 hover:shadow-md transition-all duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
                 <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Dashboard de Métricas de Mercado</h2>
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <h2 class="text-base font-bold text-slate-700 uppercase tracking-wider text-xs">Métricas & Analítica Avançada</h2>
                 </div>
                 
                 <div class="flex gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
-                    <button id="btn-barras" class="bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition">Barras</button>
-                    <button id="btn-pizza" class="text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition">Pizza</button>
+                    <button id="btn-barras" class="bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition">Barras / Linhas</button>
+                    <button id="btn-pizza" class="text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition">Pizza / Rosca</button>
                 </div>
             </div>
 
-            <!-- Cartões de Indicadores -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                <div class="bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-blue-300 transition">
+                <div class="bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-200/60 p-5 rounded-2xl flex flex-col justify-center items-center hover:border-blue-300 transition">
                     <span class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total de Candidaturas</span>
                     <p id="metric-total" class="text-4xl font-extrabold text-blue-900">0</p>
                 </div>
-                <div class="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-emerald-300 transition">
+                <div class="bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-200/60 p-5 rounded-2xl flex flex-col justify-center items-center hover:border-emerald-300 transition">
                     <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Empresas Distintas</span>
                     <p id="metric-empresas" class="text-4xl font-extrabold text-emerald-900">0</p>
                 </div>
-                <div class="bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-200/60 p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden group hover:border-purple-300 transition">
+                <div class="bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-200/60 p-5 rounded-2xl flex flex-col justify-center items-center hover:border-purple-300 transition">
                     <span class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Cargos Distintos</span>
                     <p id="metric-cargos" class="text-4xl font-extrabold text-purple-900">0</p>
                 </div>
             </div>
             
-            <!-- Conteineres dos Gráficos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="border border-slate-200/70 rounded-2xl p-5 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition">
+            <!-- Grelha de Gráficos Expandida -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Gráficos Originais -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Ofertas por Empresa</h3>
-                    <div class="h-64 relative">
-                        <canvas id="graficoEmpresas"></canvas>
-                    </div>
+                    <div class="h-56 relative"><canvas id="graficoEmpresas"></canvas></div>
                     <div id="legenda-graficoEmpresas" class="hidden mt-4 pt-3 border-t border-slate-200/60"></div>
                 </div>
 
-                <div class="border border-slate-200/70 rounded-2xl p-5 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition">
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Recorrência de Cargos</h3>
-                    <div class="h-64 relative">
-                        <canvas id="graficoCargos"></canvas>
-                    </div>
+                    <div class="h-56 relative"><canvas id="graficoCargos"></canvas></div>
                     <div id="legenda-graficoCargos" class="hidden mt-4 pt-3 border-t border-slate-200/60"></div>
+                </div>
+
+                <!-- Taxa de Rejeição Fantasma -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center" title="Sem reposta há +30 dias">Taxa de Rejeição Fantasma</h3>
+                    <div class="h-56 relative"><canvas id="graficoFantasma"></canvas></div>
+                </div>
+
+                <!-- Taxa de Funil -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1 md:col-span-2">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Taxa de Conversão do Funil</h3>
+                    <div class="h-56 relative"><canvas id="graficoFunil"></canvas></div>
+                </div>
+
+                <!-- Eficiência por Plataforma -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-2 md:col-span-2">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Eficiência por Plataforma</h3>
+                    <div class="h-56 relative"><canvas id="graficoEficiencia"></canvas></div>
+                </div>
+
+                <!-- Tempo Médio de Resposta -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1 md:col-span-1">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Tempo Médio Resposta (Dias)</h3>
+                    <div class="h-56 relative"><canvas id="graficoTempo"></canvas></div>
+                </div>
+
+                <!-- Velocidade da Aplicação -->
+                <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-2 md:col-span-1">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Velocidade da Aplicação (Mês)</h3>
+                    <div class="h-56 relative"><canvas id="graficoVelocidade"></canvas></div>
                 </div>
             </div>
         </section>
+    </div>
 
+    <!-- Modal de Edição (Escondido por padrão) -->
+    <div id="modal-edicao" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-slate-200/80 overflow-hidden transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-sm font-bold text-slate-700 uppercase">Editar Candidatura #<span id="edit-id-display"></span></h3>
+                <button onclick="fecharModalEdicao()" class="text-slate-400 hover:text-slate-600 transition">&times;</button>
+            </div>
+            <form id="form-edicao" class="p-6 space-y-4">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Cargo</label>
+                    <input type="text" id="edit-cargo" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Empresa</label>
+                    <input type="text" id="edit-empresa" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Plataforma</label>
+                    <select id="edit-plataforma" onchange="verificarPlataformaOutro('edit-plataforma', 'edit-container-outro', 'edit-plataforma-outro-input')" class="w-full rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm"></select>
+                    <div id="edit-container-outro" class="hidden mt-2">
+                        <input type="text" id="edit-plataforma-outro-input" placeholder="Nova plataforma..." class="w-full rounded-lg border-slate-300 border p-2.5 text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalEdicao()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -202,8 +232,10 @@
 
         let candidaturas = [];
         let tipoGrafico = 'bar'; 
-        let chartEmpresas = null;
-        let chartCargos = null;
+        let ordenacao = { coluna: 'id', direcao: 'desc' }; // Ordenação Padrão
+
+        // Instâncias de Gráficos
+        let chartEmpresas, chartCargos, chartFunil, chartTempo, chartFantasma, chartEficiencia, chartVelocidade;
 
         const plataformasPadrao = ['LinkedIn', 'Gupy', 'CenterRH', 'Sólides', 'Infojobs'];
         let plataformasCustom = [];
@@ -212,16 +244,16 @@
             carregarPlataformas();
             carregarDados();
             document.getElementById('form-vaga').addEventListener('submit', salvarVaga);
+            document.getElementById('form-edicao').addEventListener('submit', salvarEdicao);
             
             document.getElementById('btn-barras').addEventListener('click', () => mudarTipoGrafico('bar'));
             document.getElementById('btn-pizza').addEventListener('click', () => mudarTipoGrafico('pie'));
         });
 
-        // === Controle do Formulário Expansível ===
+        // === Formulário Expansível ===
         function toggleFormulario() {
             const form = document.getElementById('form-vaga');
             const icone = document.getElementById('icone-toggle');
-            
             if (form.classList.contains('hidden')) {
                 form.classList.remove('hidden');
                 icone.textContent = '−';
@@ -231,73 +263,74 @@
             }
         }
 
-        // === Gestão de Plataformas Selecionáveis ===
+        // === Plataformas e Modal ===
         function carregarPlataformas() {
             const salvas = localStorage.getItem('jobtracker_plataformas');
-            if (salvas) {
-                plataformasCustom = JSON.parse(salvas);
-            }
-            renderizarOpcoesPlataforma();
+            if (salvas) plataformasCustom = JSON.parse(salvas);
+            renderizarOpcoesPlataforma('plataforma');
         }
 
-        function renderizarOpcoesPlataforma() {
-            const select = document.getElementById('plataforma');
+        function renderizarOpcoesPlataforma(selectId, selecionado = null) {
+            const select = document.getElementById(selectId);
             if (!select) return;
-
-            const todasPlataformas = [...plataformasPadrao, ...plataformasCustom];
+            const todasPlataformas = [...new Set([...plataformasPadrao, ...plataformasCustom])];
             let html = todasPlataformas.map(p => `<option value="${p}">${p}</option>`).join('');
             html += `<option value="Outro">+ Outro...</option>`;
             select.innerHTML = html;
-        }
-
-        function verificarPlataformaOutro(valor) {
-            const containerOutro = document.getElementById('container-plataforma-outro');
-            if (valor === 'Outro') {
-                containerOutro.classList.remove('hidden');
-                document.getElementById('plataforma-outro-input').focus();
-            } else {
-                containerOutro.classList.add('hidden');
+            if(selecionado && todasPlataformas.includes(selecionado)) {
+                select.value = selecionado;
+            } else if (selecionado) {
+                // Se existe no BD mas nao nas listas, cria dinamicamente
+                plataformasCustom.push(selecionado);
+                localStorage.setItem('jobtracker_plataformas', JSON.stringify(plataformasCustom));
+                renderizarOpcoesPlataforma(selectId, selecionado);
             }
         }
 
-        // === Manipulação de Dados ===
+        function verificarPlataformaOutro(selectId, containerId, inputId) {
+            const select = document.getElementById(selectId);
+            const container = document.getElementById(containerId);
+            if (select.value === 'Outro') {
+                container.classList.remove('hidden');
+                document.getElementById(inputId).focus();
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function obterPlataformaResolvida(selectId, inputId) {
+            let plat = document.getElementById(selectId).value;
+            if (plat === 'Outro') {
+                plat = document.getElementById(inputId).value.trim() || 'Outro';
+                if (plat !== 'Outro' && !plataformasPadrao.includes(plat) && !plataformasCustom.includes(plat)) {
+                    plataformasCustom.push(plat);
+                    localStorage.setItem('jobtracker_plataformas', JSON.stringify(plataformasCustom));
+                    renderizarOpcoesPlataforma('plataforma');
+                }
+            }
+            return plat;
+        }
+
+        // === Gestão de Dados ===
         function carregarDados() {
             const dadosSalvos = localStorage.getItem('jobtracker_candidaturas');
-            if (dadosSalvos) {
-                candidaturas = JSON.parse(dadosSalvos);
-            }
+            if (dadosSalvos) candidaturas = JSON.parse(dadosSalvos);
             atualizarInterface();
         }
 
+        function hojeISO() { return new Date().toISOString().split('T')[0]; }
+
         function salvarVaga(e) {
             e.preventDefault();
-
-            let novoId = 1;
-            if (candidaturas.length > 0) {
-                novoId = Math.max(...candidaturas.map(v => parseInt(v.id) || 0)) + 1;
-            }
-
-            let plataformaSelecionada = document.getElementById('plataforma').value;
-            if (plataformaSelecionada === 'Outro') {
-                const outroValor = document.getElementById('plataforma-outro-input').value.trim();
-                if (outroValor) {
-                    plataformaSelecionada = outroValor;
-                    if (!plataformasPadrao.includes(outroValor) && !plataformasCustom.includes(outroValor)) {
-                        plataformasCustom.push(outroValor);
-                        localStorage.setItem('jobtracker_plataformas', JSON.stringify(plataformasCustom));
-                        renderizarOpcoesPlataforma();
-                    }
-                } else {
-                    plataformaSelecionada = 'Outro';
-                }
-            }
-
+            let novoId = candidaturas.length > 0 ? Math.max(...candidaturas.map(v => parseInt(v.id) || 0)) + 1 : 1;
+            
             const novaVaga = {
                 id: novoId.toString(),
                 cargo: document.getElementById('cargo').value.trim(),
                 empresa: document.getElementById('empresa').value.trim(),
-                plataforma: plataformaSelecionada,
+                plataforma: obterPlataformaResolvida('plataforma', 'plataforma-outro-input'),
                 data: document.getElementById('data').value,
+                dataAtualizacao: hojeISO(), // Tracker para tempo médio
                 status: document.getElementById('status').value
             };
 
@@ -305,9 +338,6 @@
             sincronizarLocal();
             document.getElementById('form-vaga').reset();
             document.getElementById('container-plataforma-outro').classList.add('hidden');
-            document.getElementById('plataforma').value = plataformasPadrao[0];
-            
-            // Re-minimiza o formulário após salvar
             toggleFormulario();
             atualizarInterface();
         }
@@ -316,6 +346,7 @@
             const vaga = candidaturas.find(v => v.id === id);
             if (vaga) {
                 vaga.status = novoStatus;
+                vaga.dataAtualizacao = hojeISO();
                 sincronizarLocal();
                 atualizarInterface();
             }
@@ -323,11 +354,7 @@
 
         function excluirVaga(id) {
             candidaturas = candidaturas.filter(vaga => vaga.id !== id);
-            
-            candidaturas.forEach((vaga, index) => {
-                vaga.id = (index + 1).toString();
-            });
-
+            candidaturas.forEach((vaga, index) => vaga.id = (index + 1).toString());
             sincronizarLocal();
             atualizarInterface();
         }
@@ -336,122 +363,69 @@
             localStorage.setItem('jobtracker_candidaturas', JSON.stringify(candidaturas));
         }
 
-        function exportarCSV() {
-            if (candidaturas.length === 0) {
-                alert("Não há dados cadastrados para exportar.");
-                return;
-            }
-
-            let csv = "id;cargo;empresa;plataforma;data;status\n";
-            candidaturas.forEach(vaga => {
-                const cargoLimpo = vaga.cargo.includes(';') ? `"${vaga.cargo}"` : vaga.cargo;
-                const empresaLimpa = vaga.empresa.includes(';') ? `"${vaga.empresa}"` : vaga.empresa;
-                const platLimpa = (vaga.plataforma || 'Não especificada').includes(';') ? `"${vaga.plataforma}"` : (vaga.plataforma || 'Não especificada');
-                
-                csv += `${vaga.id};${cargoLimpo};${empresaLimpa};${platLimpa};${vaga.data};${vaga.status}\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `jobtracker_backup_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function parseCSVLine(linha, separador) {
-            let colunas = [];
-            let valorAtual = '';
-            let entreAspas = false;
+        // === Edição ===
+        function abrirModalEdicao(id) {
+            const vaga = candidaturas.find(v => v.id === id);
+            if(!vaga) return;
             
-            for (let i = 0; i < linha.length; i++) {
-                let char = linha[i];
-                if (char === '"') {
-                    entreAspas = !entreAspas;
-                } else if (char === separador && !entreAspas) {
-                    colunas.push(valorAtual);
-                    valorAtual = '';
-                } else {
-                    valorAtual += char;
-                }
-            }
-            colunas.push(valorAtual);
-            return colunas.map(c => c.trim());
+            document.getElementById('edit-id').value = vaga.id;
+            document.getElementById('edit-id-display').innerText = vaga.id;
+            document.getElementById('edit-cargo').value = vaga.cargo;
+            document.getElementById('edit-empresa').value = vaga.empresa;
+            renderizarOpcoesPlataforma('edit-plataforma', vaga.plataforma);
+            document.getElementById('edit-container-outro').classList.add('hidden');
+
+            const modal = document.getElementById('modal-edicao');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
         }
 
-        function processarStringCSV(conteudo) {
-            const linhas = conteudo.split(/\r?\n/);
-            let novasCandidaturas = [];
-            let maiorIdEncontrado = 0;
+        function fecharModalEdicao() {
+            const modal = document.getElementById('modal-edicao');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
 
-            for (let i = 1; i < linhas.length; i++) {
-                const linha = linhas[i].trim();
-                if (linha === "") continue;
-
-                const separador = linha.includes(';') ? ';' : ',';
-                const colunas = parseCSVLine(linha, separador);
-
-                if (colunas.length >= 5) {
-                    let idSequencial = parseInt(colunas[0]) || (maiorIdEncontrado + 1);
-                    if (idSequencial > maiorIdEncontrado) maiorIdEncontrado = idSequencial;
-
-                    let cargo = colunas[1];
-                    let empresa = colunas[2];
-                    let plataforma = "Não especificada";
-                    let dataRaw = colunas[3];
-                    let status = colunas[4];
-
-                    // Se o CSV possui 6 colunas (formato novo com plataforma)
-                    if (colunas.length >= 6) {
-                        plataforma = colunas[3];
-                        dataRaw = colunas[4];
-                        status = colunas[5];
-                    }
-
-                    let dataFormatada = dataRaw;
-                    if (dataFormatada.includes('/')) {
-                        const partes = dataFormatada.split('/');
-                        if (partes.length === 3) {
-                            let ano = partes[2];
-                            if (ano.length === 2) ano = '20' + ano;
-                            const mes = partes[1].padStart(2, '0');
-                            const dia = partes[0].padStart(2, '0');
-                            dataFormatada = `${ano}-${mes}-${dia}`;
-                        }
-                    }
-
-                    novasCandidaturas.push({
-                        id: idSequencial.toString(),
-                        cargo: cargo,
-                        empresa: empresa,
-                        plataforma: plataforma,
-                        data: dataFormatada,
-                        status: status
-                    });
-                }
-            }
-
-            if (novasCandidaturas.length > 0) {
-                candidaturas = novasCandidaturas;
+        function salvarEdicao(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const vaga = candidaturas.find(v => v.id === id);
+            if(vaga) {
+                vaga.cargo = document.getElementById('edit-cargo').value.trim();
+                vaga.empresa = document.getElementById('edit-empresa').value.trim();
+                vaga.plataforma = obterPlataformaResolvida('edit-plataforma', 'edit-plataforma-outro-input');
+                vaga.dataAtualizacao = hojeISO();
                 sincronizarLocal();
                 atualizarInterface();
-            } else {
-                alert("Arquivo vazio ou colunas incompatíveis.");
             }
+            fecharModalEdicao();
         }
 
-        function importarCSV(event) {
-            const arquivo = event.target.files[0];
-            if (!arquivo) return;
-
-            const leitor = new FileReader();
-            leitor.onload = function(e) {
-                processarStringCSV(e.target.result);
-                event.target.value = ''; 
-            };
-            leitor.readAsText(arquivo);
+        // === Ordenação da Tabela ===
+        function ordenarTabela(coluna) {
+            if (ordenacao.coluna === coluna) {
+                ordenacao.direcao = ordenacao.direcao === 'asc' ? 'desc' : 'asc';
+            } else {
+                ordenacao.coluna = coluna;
+                ordenacao.direcao = 'asc';
+            }
+            // Atualizar UI dos ícones
+            document.querySelectorAll('th span[id^="sort-icon-"]').forEach(el => {
+                el.innerText = '';
+                el.className = 'text-slate-300 ml-1 text-[10px]';
+            });
+            const iconeAtivo = document.getElementById(`sort-icon-${coluna}`);
+            if(iconeAtivo) {
+                iconeAtivo.innerText = ordenacao.direcao === 'asc' ? '↑' : '↓';
+                iconeAtivo.className = 'text-blue-500 ml-1 text-[10px] font-bold';
+            }
+            renderizarTabela();
         }
 
         function atualizarInterface() {
@@ -465,24 +439,30 @@
             tbody.innerHTML = '';
 
             if (candidaturas.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-slate-400 italic font-medium">
-                            Nenhuma candidatura registrada ainda. Clique no botão "+" ao lado para cadastrar.
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 italic font-medium">Nenhuma candidatura registada.</td></tr>`;
                 return;
             }
 
-            const candidaturasOrdenadas = [...candidaturas].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+            const candidaturasOrdenadas = [...candidaturas].sort((a, b) => {
+                let valA = a[ordenacao.coluna];
+                let valB = b[ordenacao.coluna];
+                
+                if (ordenacao.coluna === 'id') {
+                    valA = parseInt(valA) || 0; valB = parseInt(valB) || 0;
+                } else if (ordenacao.coluna === 'data') {
+                    valA = new Date(valA).getTime(); valB = new Date(valB).getTime();
+                } else {
+                    valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
+                }
+                
+                if (valA < valB) return ordenacao.direcao === 'asc' ? -1 : 1;
+                if (valA > valB) return ordenacao.direcao === 'asc' ? 1 : -1;
+                return 0;
+            });
 
             candidaturasOrdenadas.forEach(vaga => {
                 const partesData = vaga.data.split('-');
-                let dataExibicao = vaga.data;
-                if(partesData.length === 3) {
-                    dataExibicao = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-                }
+                const dataExibicao = partesData.length === 3 ? `${partesData[2]}/${partesData[1]}/${partesData[0]}` : vaga.data;
 
                 let statusBadge = "bg-slate-100 text-slate-700 border-slate-200/60";
                 if(vaga.status === 'aprovado') statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-semibold";
@@ -496,11 +476,7 @@
                     <td class="px-4 py-3 font-semibold text-slate-400 text-xs">${vaga.id}</td>
                     <td class="px-4 py-3 font-semibold text-slate-800">${vaga.cargo}</td>
                     <td class="px-4 py-3 text-slate-600">${vaga.empresa}</td>
-                    <td class="px-4 py-3 text-slate-600">
-                        <span class="inline-block px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-medium text-xs">
-                            ${vaga.plataforma || 'Não especificada'}
-                        </span>
-                    </td>
+                    <td class="px-4 py-3 text-slate-600"><span class="inline-block px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-medium text-xs">${vaga.plataforma || 'N/A'}</span></td>
                     <td class="px-4 py-3 text-slate-500 text-xs font-medium">${dataExibicao}</td>
                     <td class="px-4 py-3">
                         <select onchange="alterarStatusVaga('${vaga.id}', this.value)" class="text-xs rounded-xl px-2.5 py-1 border transition outline-none cursor-pointer ${statusBadge}">
@@ -510,188 +486,200 @@
                             <option value="aprovado" ${vaga.status === 'aprovado' ? 'selected' : ''}>aprovado</option>
                         </select>
                     </td>
-                    <td class="px-4 py-3 text-right">
-                        <button onclick="excluirVaga('${vaga.id}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg text-xs font-semibold transition">
-                            Excluir
-                        </button>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                        <button onclick="abrirModalEdicao('${vaga.id}')" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded-lg text-xs font-semibold transition mr-1">Editar</button>
+                        <button onclick="excluirVaga('${vaga.id}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg text-xs font-semibold transition">Excluir</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function verificarNotificacoes() {
-            const barra = document.getElementById('notificacao-barra');
-            const umTempoAtras = new Date();
-            umTempoAtras.setDate(umTempoAtras.getDate() - 7); 
-
-            const vagasEstagnadas = candidaturas.filter(vaga => {
-                const dataVaga = new Date(vaga.data);
-                return dataVaga < umTempoAtras && vaga.status === 'aguardando chamada';
+        // === Import/Export (Simplificado para o código base compatível) ===
+        function exportarCSV() {
+            let csv = "id;cargo;empresa;plataforma;data;status;dataAtualizacao\n";
+            candidaturas.forEach(v => {
+                const lc = s => (s||'').includes(';') ? `"${s}"` : (s||'');
+                csv += `${v.id};${lc(v.cargo)};${lc(v.empresa)};${lc(v.plataforma)};${v.data};${v.status};${v.dataAtualizacao||''}\n`;
             });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `jobtracker_backup_${hojeISO()}.csv`;
+            link.click();
+        }
 
-            if (vagasEstagnadas.length > 0) {
-                barra.innerHTML = `
-                    <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <span>Você tem <strong>${vagasEstagnadas.length}</strong> vaga(s) aguardando retorno há mais de 1 semana.</span>
-                `;
-                barra.classList.remove('hidden');
-            } else {
-                barra.classList.add('hidden');
-            }
+        function importarCSV(e) {
+            const leitor = new FileReader();
+            leitor.onload = function(evt) {
+                const linhas = evt.target.result.split(/\r?\n/).filter(l => l.trim() !== "");
+                let novas = [], maxId = 0;
+                for (let i = 1; i < linhas.length; i++) {
+                    let cols = []; let val = ''; let aspas = false;
+                    for (let c of linhas[i]) {
+                        if(c === '"') aspas = !aspas;
+                        else if((c === ';' || c === ',') && !aspas) { cols.push(val.trim()); val = ''; }
+                        else val += c;
+                    }
+                    cols.push(val.trim());
+                    if(cols.length >= 5) {
+                        let id = parseInt(cols[0]) || (maxId + 1);
+                        if(id > maxId) maxId = id;
+                        let d = cols.length >= 6 ? cols[4] : cols[3];
+                        if(d.includes('/')) { let p=d.split('/'); d = `${p[2].length===2?'20'+p[2]:p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; }
+                        novas.push({
+                            id: id.toString(), cargo: cols[1], empresa: cols[2], 
+                            plataforma: cols.length >= 6 ? cols[3] : "Outro", 
+                            data: d, status: cols.length >= 6 ? cols[5] : cols[4],
+                            dataAtualizacao: cols[6] || d
+                        });
+                    }
+                }
+                if(novas.length > 0) { candidaturas = novas; sincronizarLocal(); atualizarInterface(); }
+            };
+            if(e.target.files[0]) leitor.readAsText(e.target.files[0]);
+            e.target.value = '';
+        }
+
+        // === Dashboard Avançado ===
+        function verificarNotificacoes() {
+            const estagnadas = candidaturas.filter(v => v.status === 'aguardando chamada' && (new Date() - new Date(v.data)) > 7*86400000);
+            const b = document.getElementById('notificacao-barra');
+            if (estagnadas.length > 0) {
+                b.innerHTML = `⚠️ <span>Você tem <strong>${estagnadas.length}</strong> vaga(s) aguardando retorno há mais de 1 semana.</span>`;
+                b.classList.remove('hidden');
+            } else b.classList.add('hidden');
         }
 
         function mudarTipoGrafico(tipo) {
             tipoGrafico = tipo;
-            const btnBarras = document.getElementById('btn-barras');
-            const btnPizza = document.getElementById('btn-pizza');
-            
-            if (tipo === 'bar') {
-                btnBarras.className = 'bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition';
-                btnPizza.className = 'text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition bg-transparent shadow-none';
-            } else {
-                btnPizza.className = 'bg-white text-blue-700 shadow-xs px-4 py-1.5 rounded-lg text-xs font-semibold transition';
-                btnBarras.className = 'text-slate-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:text-slate-900 transition bg-transparent shadow-none';
-            }
             atualizarDashboard();
         }
 
-        function gerarCoresUnicas(total) {
-            const cores = [];
-            for (let i = 0; i < total; i++) {
-                const hue = Math.round((i * 137.508) % 360); 
-                cores.push(`hsl(${hue}, 75%, 52%)`);
-            }
-            return cores;
-        }
-
-        function prepararDadosParaGrafico(contagemObj) {
-            const entradas = Object.entries(contagemObj).sort((a, b) => b[1] - a[1]);
-            return {
-                labels: entradas.map(e => e[0]),
-                data: entradas.map(e => e[1])
-            };
+        function gerarCoresHSL(total, s=75, l=52) {
+            return Array.from({length: total}, (_, i) => `hsl(${Math.round((i * 137.5) % 360)}, ${s}%, ${l}%)`);
         }
 
         function atualizarDashboard() {
             document.getElementById('metric-total').textContent = candidaturas.length;
-            
-            const empresasUnicas = new Set(candidaturas.map(v => v.empresa.toLowerCase()));
-            document.getElementById('metric-empresas').textContent = empresasUnicas.size;
+            document.getElementById('metric-empresas').textContent = new Set(candidaturas.map(v => v.empresa)).size;
+            document.getElementById('metric-cargos').textContent = new Set(candidaturas.map(v => v.cargo)).size;
 
-            const cargosUnicos = new Set(candidaturas.map(v => v.cargo.toLowerCase()));
-            document.getElementById('metric-cargos').textContent = cargosUnicos.size;
-
-            const contagemEmpresas = {};
-            const contagemCargos = {};
+            // Agrupamentos
+            const cntEmp = {}, cntCar = {}, cntPlatStat = {}, velMes = {}, tempos = {soma:0, q:0};
+            let funil = { total: candidaturas.length, avancaram: 0, aprovas: 0 };
+            let fantasma = { ativas: 0, ignoradas: 0, respondidas: 0 };
+            const hoje = new Date();
 
             candidaturas.forEach(v => {
-                contagemEmpresas[v.empresa] = (contagemEmpresas[v.empresa] || 0) + 1;
-                contagemCargos[v.cargo] = (contagemCargos[v.cargo] || 0) + 1;
-            });
+                cntEmp[v.empresa] = (cntEmp[v.empresa] || 0) + 1;
+                cntCar[v.cargo] = (cntCar[v.cargo] || 0) + 1;
+                
+                // Eficiencia por plataforma
+                if(!cntPlatStat[v.plataforma]) cntPlatStat[v.plataforma] = {aprovado:0, entrevista:0, rejeitado:0, aguardando:0};
+                if(v.status.includes('entrevista')) cntPlatStat[v.plataforma].entrevista++;
+                else if(v.status.includes('aprovado')) cntPlatStat[v.plataforma].aprovado++;
+                else if(v.status.includes('rejeitado')) cntPlatStat[v.plataforma].rejeitado++;
+                else cntPlatStat[v.plataforma].aguardando++;
 
-            const dadosEmpresas = prepararDadosParaGrafico(contagemEmpresas);
-            const dadosCargos = prepararDadosParaGrafico(contagemCargos);
+                // Funil
+                if(v.status !== 'aguardando chamada') funil.avancaram++;
+                if(v.status === 'aprovado') funil.aprovas++;
 
-            renderizarGrafico('graficoEmpresas', 'legenda-graficoEmpresas', 'Ofertas por Empresa', dadosEmpresas.labels, dadosEmpresas.data, chartEmpresas, chart => chartEmpresas = chart);
-            renderizarGrafico('graficoCargos', 'legenda-graficoCargos', 'Recorrência de Cargos', dadosCargos.labels, dadosCargos.data, chartCargos, chart => chartCargos = chart);
-        }
+                // Fantasma (>30 dias aguardando)
+                let dias = (hoje - new Date(v.data)) / 86400000;
+                if(v.status === 'aguardando chamada') dias > 30 ? fantasma.ignoradas++ : fantasma.ativas++;
+                else fantasma.respondidas++;
 
-        function renderizarLegendaScrollavel(idLegenda, labels, data, cores, totalSum) {
-            const container = document.getElementById(idLegenda);
-            if (!container) return;
-
-            if (tipoGrafico !== 'pie' || labels.length === 0) {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-                return;
-            }
-
-            container.classList.remove('hidden');
-            let html = '<div class="flex flex-wrap gap-2 text-xs text-slate-700 max-h-28 overflow-y-auto custom-scrollbar pr-1">';
-            labels.forEach((label, i) => {
-                const val = data[i];
-                const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
-                html += `
-                    <div class="flex items-center gap-2 bg-white border border-slate-200/80 px-2.5 py-1 rounded-xl shadow-xs hover:border-slate-300 transition">
-                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${cores[i]}"></span>
-                        <span class="font-medium text-slate-700 truncate max-w-[130px]" title="${label}">${label}:</span>
-                        <span class="text-slate-500 font-bold">${val} (${pct}%)</span>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function renderizarGrafico(idCanvas, idLegenda, rotulo, labels, data, instanciaAnterior, setInstancia) {
-            const ctx = document.getElementById(idCanvas).getContext('2d');
-            if (instanciaAnterior) instanciaAnterior.destroy();
-
-            const totalSum = data.reduce((a, b) => a + b, 0);
-            const coresDinamicas = gerarCoresUnicas(labels.length);
-
-            renderizarLegendaScrollavel(idLegenda, labels, data, coresDinamicas, totalSum);
-
-            const novaInstancia = new Chart(ctx, {
-                type: tipoGrafico,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: rotulo,
-                        data: data,
-                        backgroundColor: coresDinamicas,
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                        borderRadius: tipoGrafico === 'bar' ? 6 : 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            display: function(context) {
-                                if (tipoGrafico !== 'pie' || totalSum === 0) return false;
-                                const val = context.dataset.data[context.dataIndex];
-                                const pct = (val / totalSum) * 100;
-                                return pct >= 2.5;
-                            },
-                            color: '#ffffff',
-                            font: { weight: 'bold', size: 11 },
-                            formatter: function(value) {
-                                if (totalSum === 0) return '0%';
-                                const pct = ((value / totalSum) * 100).toFixed(1);
-                                return `${pct}%`;
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { size: 12, weight: 'bold' },
-                            bodyFont: { size: 12 },
-                            padding: 10,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    const val = context.raw || 0;
-                                    const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
-                                    return ` ${context.label}: ${val} (${pct}%)`;
-                                }
-                            }
-                        }
-                    },
-                    scales: tipoGrafico === 'bar' ? {
-                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(226, 232, 240, 0.6)' } },
-                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
-                    } : {
-                        x: { display: false },
-                        y: { display: false }
-                    }
+                // Tempo Resposta
+                if(v.status !== 'aguardando chamada') {
+                    let dAtt = new Date(v.dataAtualizacao || v.data);
+                    let diff = Math.max(0, (dAtt - new Date(v.data)) / 86400000);
+                    tempos.soma += diff; tempos.q++;
                 }
+
+                // Velocidade
+                let mes = v.data.substring(0,7);
+                velMes[mes] = (velMes[mes]||0)+1;
             });
-            setInstancia(novaInstancia);
+
+            // Renderizar Básicos
+            const dEmp = Object.entries(cntEmp).sort((a,b)=>b[1]-a[1]);
+            const dCar = Object.entries(cntCar).sort((a,b)=>b[1]-a[1]);
+            renderizarPadrao('graficoEmpresas', 'legenda-graficoEmpresas', dEmp, tipoGrafico, chartEmpresas, c => chartEmpresas = c);
+            renderizarPadrao('graficoCargos', 'legenda-graficoCargos', dCar, tipoGrafico, chartCargos, c => chartCargos = c);
+
+            // Renderizar Funil (Barras Horizontais)
+            renderizarCustom('graficoFunil', 'bar', {
+                labels: ['1. Enviadas', '2. Respostas/Entrevistas', '3. Aprovações'],
+                datasets: [{ data: [funil.total, funil.avancaram, funil.aprovas], backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], borderRadius: 4 }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false } } }, chartFunil, c => chartFunil = c);
+
+            // Renderizar Fantasma (Doughnut)
+            renderizarCustom('graficoFantasma', tipoGrafico === 'bar' ? 'pie' : 'doughnut', {
+                labels: ['Aguardando (<30d)', 'Ignoradas/Fantasmas (>30d)', 'Processadas'],
+                datasets: [{ data: [fantasma.ativas, fantasma.ignoradas, fantasma.respondidas], backgroundColor: ['#f59e0b', '#ef4444', '#10b981'] }]
+            }, {}, chartFantasma, c => chartFantasma = c);
+
+            // Renderizar Tempo Resposta
+            let media = tempos.q > 0 ? (tempos.soma / tempos.q).toFixed(1) : 0;
+            renderizarCustom('graficoTempo', 'bar', {
+                labels: ['Tempo Médio Global (Dias)'],
+                datasets: [{ data: [media], backgroundColor: '#6366f1', borderRadius: 6 }]
+            }, { plugins: { legend:{display:false} }, scales: { y:{beginAtZero:true} } }, chartTempo, c => chartTempo = c);
+
+            // Renderizar Velocidade (Linhas)
+            const mesesOrdenados = Object.keys(velMes).sort();
+            renderizarCustom('graficoVelocidade', tipoGrafico === 'pie' ? 'bar' : 'line', {
+                labels: mesesOrdenados.map(m => m.split('-').reverse().join('/')),
+                datasets: [{ label: 'Submissões', data: mesesOrdenados.map(m => velMes[m]), borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.2)', fill: true, tension: 0.4 }]
+            }, { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }, chartVelocidade, c => chartVelocidade = c);
+
+            // Renderizar Eficiencia (Stacked Bar)
+            const plats = Object.keys(cntPlatStat);
+            renderizarCustom('graficoEficiencia', 'bar', {
+                labels: plats,
+                datasets: [
+                    { label: 'Aprovado', data: plats.map(p=>cntPlatStat[p].aprovado), backgroundColor: '#10b981' },
+                    { label: 'Entrevista', data: plats.map(p=>cntPlatStat[p].entrevista), backgroundColor: '#3b82f6' },
+                    { label: 'Rejeitado', data: plats.map(p=>cntPlatStat[p].rejeitado), backgroundColor: '#ef4444' },
+                    { label: 'Aguardando', data: plats.map(p=>cntPlatStat[p].aguardando), backgroundColor: '#f59e0b' }
+                ]
+            }, { scales: { x:{stacked:true}, y:{stacked:true} } }, chartEficiencia, c => chartEficiencia = c);
+        }
+
+        function renderizarPadrao(idCanvas, idLegenda, dados, tipo, instAnterior, setInst) {
+            const labels = dados.map(d=>d[0]); const data = dados.map(d=>d[1]);
+            const totalSum = data.reduce((a,b)=>a+b,0);
+            const cores = gerarCoresHSL(labels.length);
+            
+            const lCont = document.getElementById(idLegenda);
+            if(tipo === 'pie') {
+                lCont.classList.remove('hidden');
+                lCont.innerHTML = `<div class="flex flex-wrap gap-2 text-xs text-slate-700 max-h-24 overflow-y-auto custom-scrollbar pr-1">` + 
+                    labels.map((l,i) => `<div class="flex items-center gap-1.5 bg-white border border-slate-200 px-2 py-1 rounded shadow-xs"><span class="w-2.5 h-2.5 rounded-full" style="background-color:${cores[i]}"></span><span class="truncate max-w-[100px]">${l}:</span><strong>${data[i]}</strong></div>`).join('') + `</div>`;
+            } else { lCont.classList.add('hidden'); }
+
+            renderizarCustom(idCanvas, tipo, {
+                labels: labels, datasets: [{ data: data, backgroundColor: cores, borderWidth: 1, borderColor:'#fff', borderRadius: tipo==='bar'?4:0 }]
+            }, {
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        display: (ctx) => tipo === 'pie' && (ctx.dataset.data[ctx.dataIndex]/totalSum) > 0.03,
+                        color: '#fff', font: { weight:'bold', size:10 },
+                        formatter: v => ((v/totalSum)*100).toFixed(0)+'%'
+                    }
+                },
+                scales: tipo==='bar' ? { y:{beginAtZero:true, ticks:{stepSize:1}}, x:{display:false} } : {x:{display:false},y:{display:false}}
+            }, instAnterior, setInst);
+        }
+
+        function renderizarCustom(id, type, dataObj, optionsOverrides, prev, setInst) {
+            if(prev) prev.destroy();
+            const defOptions = { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display:false } } };
+            setInst(new Chart(document.getElementById(id).getContext('2d'), { type: type, data: dataObj, options: {...defOptions, ...optionsOverrides} }));
         }
     </script>
 </body>
 </html>
+
