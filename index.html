@@ -147,7 +147,6 @@
                 </div>
             </div>
             
-            <!-- Grelha de Gráficos Expandida -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Gráficos Originais -->
                 <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1">
@@ -182,7 +181,7 @@
 
                 <!-- Tempo Médio de Resposta -->
                 <div class="border border-slate-200/70 rounded-2xl p-4 bg-slate-50/50 flex flex-col hover:bg-slate-50 transition lg:col-span-1 md:col-span-1">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Tempo Médio Resposta (Dias)</h3>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">Tempo Médio em Aberto (Dias)</h3>
                     <div class="h-56 relative"><canvas id="graficoTempo"></canvas></div>
                 </div>
 
@@ -234,7 +233,6 @@
         let tipoGrafico = 'bar'; 
         let ordenacao = { coluna: 'id', direcao: 'desc' }; // Ordenação Padrão
 
-        // Instâncias de Gráficos
         let chartEmpresas, chartCargos, chartFunil, chartTempo, chartFantasma, chartEficiencia, chartVelocidade;
 
         const plataformasPadrao = ['LinkedIn', 'Gupy', 'CenterRH', 'Sólides', 'Infojobs'];
@@ -280,7 +278,6 @@
             if(selecionado && todasPlataformas.includes(selecionado)) {
                 select.value = selecionado;
             } else if (selecionado) {
-                // Se existe no BD mas nao nas listas, cria dinamicamente
                 plataformasCustom.push(selecionado);
                 localStorage.setItem('jobtracker_plataformas', JSON.stringify(plataformasCustom));
                 renderizarOpcoesPlataforma(selectId, selecionado);
@@ -330,7 +327,7 @@
                 empresa: document.getElementById('empresa').value.trim(),
                 plataforma: obterPlataformaResolvida('plataforma', 'plataforma-outro-input'),
                 data: document.getElementById('data').value,
-                dataAtualizacao: hojeISO(), // Tracker para tempo médio
+                dataAtualizacao: hojeISO(),
                 status: document.getElementById('status').value
             };
 
@@ -415,7 +412,6 @@
                 ordenacao.coluna = coluna;
                 ordenacao.direcao = 'asc';
             }
-            // Atualizar UI dos ícones
             document.querySelectorAll('th span[id^="sort-icon-"]').forEach(el => {
                 el.innerText = '';
                 el.className = 'text-slate-300 ml-1 text-[10px]';
@@ -495,7 +491,7 @@
             });
         }
 
-        // === Import/Export (Simplificado para o código base compatível) ===
+        // === Import/Export ===
         function exportarCSV() {
             let csv = "id;cargo;empresa;plataforma;data;status;dataAtualizacao\n";
             candidaturas.forEach(v => {
@@ -564,11 +560,12 @@
             document.getElementById('metric-empresas').textContent = new Set(candidaturas.map(v => v.empresa)).size;
             document.getElementById('metric-cargos').textContent = new Set(candidaturas.map(v => v.cargo)).size;
 
-            // Agrupamentos
             const cntEmp = {}, cntCar = {}, cntPlatStat = {}, velMes = {}, tempos = {soma:0, q:0};
             let funil = { total: candidaturas.length, avancaram: 0, aprovas: 0 };
             let fantasma = { ativas: 0, ignoradas: 0, respondidas: 0 };
-            const hoje = new Date();
+            
+            // Variável base para o cálculo de dias de forma padronizada (às 00:00 local)
+            const hojeTs = new Date().setHours(0,0,0,0);
 
             candidaturas.forEach(v => {
                 cntEmp[v.empresa] = (cntEmp[v.empresa] || 0) + 1;
@@ -585,21 +582,25 @@
                 if(v.status !== 'aguardando chamada') funil.avancaram++;
                 if(v.status === 'aprovado') funil.aprovas++;
 
-                // Fantasma (>30 dias aguardando)
-                let dias = (hoje - new Date(v.data)) / 86400000;
-                if(v.status === 'aguardando chamada') dias > 30 ? fantasma.ignoradas++ : fantasma.ativas++;
+                // Cálculo seguro de dias usando o formato YYYY-MM-DD
+                let [ano, mes, dia] = v.data.split('-');
+                let dataVagaTs = new Date(ano, mes - 1, dia).getTime();
+                let diffDias = Math.floor((hojeTs - dataVagaTs) / 86400000);
+                if (diffDias < 0) diffDias = 0; // Proteção contra datas futuras
+
+                // Ghosting / Fantasma (>30 dias aguardando)
+                if(v.status === 'aguardando chamada') diffDias > 30 ? fantasma.ignoradas++ : fantasma.ativas++;
                 else fantasma.respondidas++;
 
-                // Tempo Resposta
-                if(v.status !== 'aguardando chamada') {
-                    let dAtt = new Date(v.dataAtualizacao || v.data);
-                    let diff = Math.max(0, (dAtt - new Date(v.data)) / 86400000);
-                    tempos.soma += diff; tempos.q++;
+                // Tempo Médio (soma de dias que estão abertas, não considerando as rejeitadas)
+                if(v.status !== 'rejeitado') {
+                    tempos.soma += diffDias;
+                    tempos.q++;
                 }
 
                 // Velocidade
-                let mes = v.data.substring(0,7);
-                velMes[mes] = (velMes[mes]||0)+1;
+                let mAno = v.data.substring(0,7);
+                velMes[mAno] = (velMes[mAno]||0)+1;
             });
 
             // Renderizar Básicos
@@ -608,24 +609,24 @@
             renderizarPadrao('graficoEmpresas', 'legenda-graficoEmpresas', dEmp, tipoGrafico, chartEmpresas, c => chartEmpresas = c);
             renderizarPadrao('graficoCargos', 'legenda-graficoCargos', dCar, tipoGrafico, chartCargos, c => chartCargos = c);
 
-            // Renderizar Funil (Barras Horizontais)
+            // Renderizar Funil
             renderizarCustom('graficoFunil', 'bar', {
                 labels: ['1. Enviadas', '2. Respostas/Entrevistas', '3. Aprovações'],
-                datasets: [{ data: [funil.total, funil.avancaram, funil.aprovas], backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], borderRadius: 4 }]
-            }, { indexAxis: 'y', plugins: { legend: { display: false } } }, chartFunil, c => chartFunil = c);
+                datasets: [{ label: 'Candidaturas', data: [funil.total, funil.avancaram, funil.aprovas], backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], borderRadius: 4 }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw}` } } } }, chartFunil, c => chartFunil = c);
 
-            // Renderizar Fantasma (Doughnut)
+            // Renderizar Fantasma (Ghosting)
             renderizarCustom('graficoFantasma', tipoGrafico === 'bar' ? 'pie' : 'doughnut', {
                 labels: ['Aguardando (<30d)', 'Ignoradas/Fantasmas (>30d)', 'Processadas'],
-                datasets: [{ data: [fantasma.ativas, fantasma.ignoradas, fantasma.respondidas], backgroundColor: ['#f59e0b', '#ef4444', '#10b981'] }]
-            }, {}, chartFantasma, c => chartFantasma = c);
+                datasets: [{ label: 'Qtd.', data: [fantasma.ativas, fantasma.ignoradas, fantasma.respondidas], backgroundColor: ['#f59e0b', '#ef4444', '#10b981'] }]
+            }, { plugins: { tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw}` } } } }, chartFantasma, c => chartFantasma = c);
 
             // Renderizar Tempo Resposta
-            let media = tempos.q > 0 ? (tempos.soma / tempos.q).toFixed(1) : 0;
+            let media = tempos.q > 0 ? (tempos.soma / tempos.q).toFixed(0) : 0;
             renderizarCustom('graficoTempo', 'bar', {
-                labels: ['Tempo Médio Global (Dias)'],
-                datasets: [{ data: [media], backgroundColor: '#6366f1', borderRadius: 6 }]
-            }, { plugins: { legend:{display:false} }, scales: { y:{beginAtZero:true} } }, chartTempo, c => chartTempo = c);
+                labels: ['Tempo Médio Global'],
+                datasets: [{ label: 'Dias em Aberto', data: [media], backgroundColor: '#6366f1', borderRadius: 6 }]
+            }, { plugins: { legend:{display:false}, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw} dias` } } }, scales: { y:{beginAtZero:true} } }, chartTempo, c => chartTempo = c);
 
             // Renderizar Velocidade (Linhas)
             const mesesOrdenados = Object.keys(velMes).sort();
@@ -634,17 +635,29 @@
                 datasets: [{ label: 'Submissões', data: mesesOrdenados.map(m => velMes[m]), borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.2)', fill: true, tension: 0.4 }]
             }, { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }, chartVelocidade, c => chartVelocidade = c);
 
-            // Renderizar Eficiencia (Stacked Bar)
+            // Renderizar Eficiencia (Stacked Bar com labels explícitas)
             const plats = Object.keys(cntPlatStat);
             renderizarCustom('graficoEficiencia', 'bar', {
                 labels: plats,
                 datasets: [
                     { label: 'Aprovado', data: plats.map(p=>cntPlatStat[p].aprovado), backgroundColor: '#10b981' },
-                    { label: 'Entrevista', data: plats.map(p=>cntPlatStat[p].entrevista), backgroundColor: '#3b82f6' },
+                    { label: 'Em entrevista', data: plats.map(p=>cntPlatStat[p].entrevista), backgroundColor: '#3b82f6' },
                     { label: 'Rejeitado', data: plats.map(p=>cntPlatStat[p].rejeitado), backgroundColor: '#ef4444' },
-                    { label: 'Aguardando', data: plats.map(p=>cntPlatStat[p].aguardando), backgroundColor: '#f59e0b' }
+                    { label: 'Aguardando chamada', data: plats.map(p=>cntPlatStat[p].aguardando), backgroundColor: '#f59e0b' }
                 ]
-            }, { scales: { x:{stacked:true}, y:{stacked:true} } }, chartEficiencia, c => chartEficiencia = c);
+            }, { 
+                scales: { x:{stacked:true}, y:{stacked:true} },
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.dataset.label}: ${context.raw}`; // Força a exibição do nome do status invés de undefined
+                            }
+                        }
+                    }
+                } 
+            }, chartEficiencia, c => chartEficiencia = c);
         }
 
         function renderizarPadrao(idCanvas, idLegenda, dados, tipo, instAnterior, setInst) {
@@ -664,6 +677,15 @@
             }, {
                 plugins: {
                     legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) {
+                                const val = c.raw || 0;
+                                const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
+                                return ` ${c.label}: ${val} (${pct}%)`;
+                            }
+                        }
+                    },
                     datalabels: {
                         display: (ctx) => tipo === 'pie' && (ctx.dataset.data[ctx.dataIndex]/totalSum) > 0.03,
                         color: '#fff', font: { weight:'bold', size:10 },
@@ -676,10 +698,24 @@
 
         function renderizarCustom(id, type, dataObj, optionsOverrides, prev, setInst) {
             if(prev) prev.destroy();
-            const defOptions = { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display:false } } };
-            setInst(new Chart(document.getElementById(id).getContext('2d'), { type: type, data: dataObj, options: {...defOptions, ...optionsOverrides} }));
+            const config = {
+                type: type,
+                data: dataObj,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    ...optionsOverrides
+                }
+            };
+            
+            // Deep merge plugins para não quebrar datalabels ou tooltips customizados
+            config.options.plugins = {
+                datalabels: { display: false },
+                ...(optionsOverrides.plugins || {})
+            };
+
+            setInst(new Chart(document.getElementById(id).getContext('2d'), config));
         }
     </script>
 </body>
 </html>
-
